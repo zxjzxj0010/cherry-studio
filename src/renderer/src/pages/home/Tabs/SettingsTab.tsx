@@ -29,7 +29,7 @@ import {
   setShowInputEstimatedTokens,
   setShowMessageDivider
 } from '@renderer/store/settings'
-import { Assistant, AssistantSettings, ThemeMode } from '@renderer/types'
+import { Assistant, AssistantSettings, LanguageVarious, ThemeMode } from '@renderer/types'
 import { Col, InputNumber, Row, Select, Slider, Switch, Tooltip } from 'antd'
 import { FC, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -383,6 +383,7 @@ const SettingsTab: FC<Props> = (props) => {
         <SettingRow>
           <SettingRowTitleSmall>{t('settings.input.target_language')}</SettingRowTitleSmall>
           <Select
+            defaultValue={'english' as LanguageVarious}
             size="small"
             value={targetLanguage}
             menuItemSelectedIcon={<CheckOutlined />}
