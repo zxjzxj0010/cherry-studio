@@ -10,7 +10,7 @@ import {
   setTray,
   setWindowStyle
 } from '@renderer/store/settings'
-import { LanguageVarious, SidebarIcon, ThemeMode } from '@renderer/types'
+import { SidebarIcon, ThemeMode, TranslateLanguageVarious } from '@renderer/types'
 
 export function useSettings() {
   const settings = useAppSelector((state) => state.settings)
@@ -31,7 +31,7 @@ export function useSettings() {
     setWindowStyle(windowStyle: 'transparent' | 'opaque') {
       dispatch(setWindowStyle(windowStyle))
     },
-    setTargetLanguage(targetLanguage: LanguageVarious) {
+    setTargetLanguage(targetLanguage: TranslateLanguageVarious) {
       dispatch(setTargetLanguage(targetLanguage))
     },
     setTopicPosition(topicPosition: 'left' | 'right') {

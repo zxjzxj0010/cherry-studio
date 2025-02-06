@@ -58,6 +58,7 @@ const Inputbar: FC<Props> = ({ assistant: _assistant, setActiveTopic }) => {
   const [inputFocus, setInputFocus] = useState(false)
   const { assistant, addTopic, model, setModel, updateAssistant } = useAssistant(_assistant.id)
   const {
+    targetLanguage,
     sendMessageShortcut,
     fontSize,
     pasteLongTextAsFile,
@@ -151,7 +152,7 @@ const Inputbar: FC<Props> = ({ assistant: _assistant, setActiveTopic }) => {
 
     try {
       setIsTranslating(true)
-      const translatedText = await translateText(text, 'english')
+      const translatedText = await translateText(text, targetLanguage)
       translatedText && setText(translatedText)
       setTimeout(() => resizeTextArea(), 0)
     } catch (error) {
