@@ -37,6 +37,7 @@ const AssistantKnowledgeBaseSettings: React.FC<Props> = ({ assistant, updateAssi
         {t('common.knowledge_base')}
       </Box>
       <Select
+        allowClear
         defaultValue={assistant.knowledge_base?.id}
         placeholder={t('agents.add.knowledge_base.placeholder')}
         menuItemSelectedIcon={<CheckOutlined />}

@@ -147,6 +147,7 @@ const PopupContainer: React.FC<Props> = ({ resolve }) => {
         </div>
         <Form.Item name="knowledge_base_id" label={t('agents.add.knowledge_base')} rules={[{ required: false }]}>
           <Select
+            allowClear
             placeholder={t('agents.add.knowledge_base.placeholder')}
             menuItemSelectedIcon={<CheckOutlined />}
             options={knowledgeOptions}
