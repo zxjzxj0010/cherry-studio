@@ -5,6 +5,7 @@ export type Assistant = {
   id: string
   name: string
   prompt: string
+  knowledge_base?: KnowledgeBase
   topics: Topic[]
   type: string
   emoji?: string
@@ -38,6 +39,7 @@ export type AssistantSettings = {
   defaultModel?: Model
   autoResetModel: boolean
   customParameters?: AssistantSettingCustomParameters[]
+  reasoning_effort?: 'low' | 'medium' | 'high'
 }
 
 export type Agent = Omit<Assistant, 'model'>
@@ -68,6 +70,7 @@ export type Message = {
   }
   askId?: string
   useful?: boolean
+  error?: Record<string, any>
 }
 
 export type Metrics = {
@@ -107,7 +110,7 @@ export type Provider = {
 
 export type ProviderType = 'openai' | 'anthropic' | 'gemini' | 'qwenlm' | 'azure-openai'
 
-export type ModelType = 'text' | 'vision' | 'embedding'
+export type ModelType = 'text' | 'vision' | 'embedding' | 'reasoning'
 
 export type Model = {
   id: string
@@ -234,6 +237,7 @@ export interface KnowledgeBase {
   created_at: number
   updated_at: number
   version: number
+  documentCount?: number
   chunkSize?: number
   chunkOverlap?: number
 }
