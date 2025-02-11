@@ -10,6 +10,9 @@ import { PdfLoader } from '@llm-tools/embedjs-loader-pdf'
 import { SitemapLoader } from '@llm-tools/embedjs-loader-sitemap'
 import { WebLoader } from '@llm-tools/embedjs-loader-web'
 import { AzureOpenAiEmbeddings, OpenAiEmbeddings } from '@llm-tools/embedjs-openai'
+import { OdpLoader } from '@main/loader/odpLoader'
+import { OdsLoader } from '@main/loader/odsLoader'
+import { OdtLoader } from '@main/loader/odtLoader'
 import { getInstanceName } from '@main/utils'
 import { FileType, KnowledgeBaseParams, KnowledgeItem } from '@types'
 import { app } from 'electron'
@@ -41,20 +44,20 @@ class KnowledgeService {
       .setEmbeddingModel(
         apiVersion
           ? new AzureOpenAiEmbeddings({
-              azureOpenAIApiKey: apiKey,
-              azureOpenAIApiVersion: apiVersion,
-              azureOpenAIApiDeploymentName: model,
-              azureOpenAIApiInstanceName: getInstanceName(baseURL),
-              dimensions,
-              batchSize
-            })
+            azureOpenAIApiKey: apiKey,
+            azureOpenAIApiVersion: apiVersion,
+            azureOpenAIApiDeploymentName: model,
+            azureOpenAIApiInstanceName: getInstanceName(baseURL),
+            dimensions,
+            batchSize
+          })
           : new OpenAiEmbeddings({
-              model,
-              apiKey,
-              configuration: { baseURL },
-              dimensions,
-              batchSize
-            })
+            model,
+            apiKey,
+            configuration: { baseURL },
+            dimensions,
+            batchSize
+          })
       )
       .setVectorDatabase(new LibSqlDb({ path: path.join(this.storageDir, id) }))
       .build()
@@ -158,6 +161,37 @@ class KnowledgeService {
         return await ragApplication.addLoader(
           new ExcelLoader({
             filePathOrUrl: file.path,
+            chunkSize: base.chunkSize,
+            chunkOverlap: base.chunkOverlap
+          }) as any,
+          forceReload
+        )
+      }
+
+      if (file.ext === '.odt') {
+        return await ragApplication.addLoader(
+          new OdtLoader({
+            filePath: file.path,
+            chunkSize: base.chunkSize,
+            chunkOverlap: base.chunkOverlap
+          }) as any,
+          forceReload
+        )
+      }
+      if (file.ext === '.ods') {
+        return await ragApplication.addLoader(
+          new OdsLoader({
+            filePath: file.path,
+            chunkSize: base.chunkSize,
+            chunkOverlap: base.chunkOverlap
+          }) as any,
+          forceReload
+        )
+      }
+      if (file.ext === '.odp') {
+        return await ragApplication.addLoader(
+          new OdpLoader({
+            filePath: file.path,
             chunkSize: base.chunkSize,
             chunkOverlap: base.chunkOverlap
           }) as any,
