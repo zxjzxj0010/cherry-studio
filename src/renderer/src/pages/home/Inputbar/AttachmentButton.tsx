@@ -16,10 +16,8 @@ interface Props {
 
 const AttachmentButton: FC<Props> = ({ model, files, setFiles, ToolbarButton, disabled }) => {
   const { t } = useTranslation()
-  const extensions = isVisionModel(model)
-    ? [...imageExts, ...documentExts, ...textExts]
-    : [...documentExts, ...textExts]
-
+  const isVision = isVisionModel(model)
+  const extensions = isVision ? [...imageExts, ...documentExts, ...textExts] : [...documentExts, ...textExts]
   const onSelectFile = async () => {
     const _files = await window.api.file.select({
       properties: ['openFile', 'multiSelections'],
@@ -37,7 +35,7 @@ const AttachmentButton: FC<Props> = ({ model, files, setFiles, ToolbarButton, di
   }
 
   return (
-    <Tooltip placement="top" title={t('chat.input.upload')} arrow>
+    <Tooltip placement="top" title={isVision ? t('chat.input.upload') : t('chat.input.upload.file')} arrow>
       <ToolbarButton type="text" className={files.length ? 'active' : ''} onClick={onSelectFile} disabled={disabled}>
         <PaperClipOutlined style={{ rotate: '135deg' }} />
       </ToolbarButton>

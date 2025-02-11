@@ -88,6 +88,7 @@
       "input.topics": " 话题 ",
       "input.translate": "翻译成{{target_language}}",
       "input.upload": "上传图片或文档",
+      "input.upload.file": "上传文档",
       "input.web_search": "开启网络搜索",
       "input.knowledge_base": "知识库",
       "message.new.branch": "分支",
@@ -299,11 +300,10 @@
       "group.delete.title": "删除分组消息",
       "group.delete.content": "删除分组消息会删除用户提问和所有助手的回答",
       "mention.title": "切换模型回答",
-      "error.notion.export":"Notion 导入失败",
-      "error.notion.no_api_key":"未配置Notion ApiKey或Notion DatabaseID",
-      "success.notion.export":"导入Notion成功",
-      "warn.notion.exporting":"Notion正在导入，请勿重复导入"
-
+      "error.notion.export": "Notion 导入失败",
+      "error.notion.no_api_key": "未配置Notion ApiKey或Notion DatabaseID",
+      "success.notion.export": "导入Notion成功",
+      "warn.notion.exporting": "Notion正在导入，请勿重复导入"
     },
     "minapp": {
       "title": "小程序",
@@ -427,9 +427,9 @@
         "webdav.noSync": "等待下次备份",
         "webdav.syncError": "备份错误",
         "webdav.lastSync": "上次备份时间",
-        "notion.api_key":"Notion 密钥",
-        "notion.database_id":"Notion 数据库ID",
-        "notion.title":"Notion 配置"
+        "notion.api_key": "Notion 密钥",
+        "notion.database_id": "Notion 数据库ID",
+        "notion.title": "Notion 配置"
       },
       "quickAssistant": {
         "title": "快捷助手",

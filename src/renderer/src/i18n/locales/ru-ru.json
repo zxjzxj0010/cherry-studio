@@ -83,6 +83,7 @@
       "input.topics": " Топики ",
       "input.translate": "Перевести на {{target_language}}",
       "input.upload": "Загрузить изображение или документ",
+      "input.upload.file": "Загрузить документ",
       "input.web_search": "Включить веб-поиск",
       "input.knowledge_base": "База знаний",
       "message.new.branch": "Новая ветка",
@@ -420,9 +421,9 @@
         "webdav.noSync": "Ожидание следующего резервного копирования",
         "webdav.syncError": "Ошибка резервного копирования",
         "webdav.lastSync": "Последняя синхронизация",
-        "notion.api_key":"Ключ API Notion",
-        "notion.database_id":"ID базы данных Notion",
-        "notion.title":"Настройки Notion"
+        "notion.api_key": "Ключ API Notion",
+        "notion.database_id": "ID базы данных Notion",
+        "notion.title": "Настройки Notion"
       },
       "quickAssistant": {
         "title": "Быстрый помощник",

@@ -83,6 +83,7 @@
       "input.topics": " トピック ",
       "input.translate": "{{target_language}}に翻訳",
       "input.upload": "画像またはドキュメントをアップロード",
+      "input.upload.file": "ドキュメントをアップロード",
       "input.web_search": "ウェブ検索を有効にする",
       "input.knowledge_base": "ナレッジベース",
       "message.new.branch": "新しいブランチ",
@@ -419,9 +420,9 @@
         "webdav.noSync": "次回のバックアップを待っています",
         "webdav.syncError": "バックアップエラー",
         "webdav.lastSync": "最終同期",
-        "notion.api_key":"Notion APIキー",
-        "notion.database_id":"Notion データベースID",
-        "notion.title":"Notion 設定"
+        "notion.api_key": "Notion APIキー",
+        "notion.database_id": "Notion データベースID",
+        "notion.title": "Notion 設定"
       },
       "quickAssistant": {
         "title": "クイックアシスタント",
