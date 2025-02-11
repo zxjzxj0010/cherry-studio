@@ -10,9 +10,7 @@ import { PdfLoader } from '@llm-tools/embedjs-loader-pdf'
 import { SitemapLoader } from '@llm-tools/embedjs-loader-sitemap'
 import { WebLoader } from '@llm-tools/embedjs-loader-web'
 import { AzureOpenAiEmbeddings, OpenAiEmbeddings } from '@llm-tools/embedjs-openai'
-import { OdpLoader } from '@main/loader/odpLoader'
-import { OdsLoader } from '@main/loader/odsLoader'
-import { OdtLoader } from '@main/loader/odtLoader'
+import { OdLoader, OdType } from '@main/loader/odLoader'
 import { getInstanceName } from '@main/utils'
 import { FileType, KnowledgeBaseParams, KnowledgeItem } from '@types'
 import { app } from 'electron'
@@ -168,9 +166,23 @@ class KnowledgeService {
         )
       }
 
-      if (file.ext === '.odt') {
+      if (['.odt', '.ods', '.odp'].includes(file.ext)) {
+        let odType: OdType = OdType.undefined
+        if (file.ext === '.odt') {
+          odType = OdType.OdtLoader
+        }
+        if (file.ext === '.ods') {
+          odType = OdType.OdsLoader
+        }
+        if (file.ext === '.odp') {
+          odType = OdType.OdpLoader
+        }
+        if (odType === OdType.undefined) {
+          throw new Error('Unknown odType')
+        }
         return await ragApplication.addLoader(
-          new OdtLoader({
+          new OdLoader({
+            odType,
             filePath: file.path,
             chunkSize: base.chunkSize,
             chunkOverlap: base.chunkOverlap
@@ -178,27 +190,6 @@ class KnowledgeService {
           forceReload
         )
       }
-      if (file.ext === '.ods') {
-        return await ragApplication.addLoader(
-          new OdsLoader({
-            filePath: file.path,
-            chunkSize: base.chunkSize,
-            chunkOverlap: base.chunkOverlap
-          }) as any,
-          forceReload
-        )
-      }
-      if (file.ext === '.odp') {
-        return await ragApplication.addLoader(
-          new OdpLoader({
-            filePath: file.path,
-            chunkSize: base.chunkSize,
-            chunkOverlap: base.chunkOverlap
-          }) as any,
-          forceReload
-        )
-      }
-
       if (['.md'].includes(file.ext)) {
         return await ragApplication.addLoader(
           new MarkdownLoader({
