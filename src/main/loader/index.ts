@@ -2,6 +2,7 @@ import * as fs from 'node:fs'
 
 import { LocalPathLoader, RAGApplication, TextLoader } from '@llm-tools/embedjs'
 import type { AddLoaderReturn } from '@llm-tools/embedjs-interfaces'
+import { LoaderReturn } from '@shared/config/types'
 import { FileType, KnowledgeBaseParams } from '@types'
 
 import { OdLoader, OdType } from './odLoader'
@@ -40,26 +41,42 @@ export async function addFileLoader(
   file: FileType,
   base: KnowledgeBaseParams,
   forceReload: boolean
-): Promise<AddLoaderReturn> {
+): Promise<LoaderReturn> {
   // 内置类型
   if (commonExts.includes(file.ext)) {
-    const result = await ragApplication.addLoader(
+    const loaderReturn = await ragApplication.addLoader(
       new LocalPathLoader({ path: file.path, chunkSize: base.chunkSize, chunkOverlap: base.chunkOverlap }) as any,
       forceReload
     )
-    return result
+    return {
+      entriesAdded: loaderReturn.entriesAdded,
+      uniqueId: loaderReturn.uniqueId,
+      uniqueIds: [loaderReturn.uniqueId],
+      loaderType: loaderReturn.loaderType
+    } as LoaderReturn
   }
 
   // 自定义类型
   if (['.odt', '.ods', '.odp'].includes(file.ext)) {
-    return await addOdLoader(ragApplication, file, base, forceReload)
+    const loaderReturn = await addOdLoader(ragApplication, file, base, forceReload)
+    return {
+      entriesAdded: loaderReturn.entriesAdded,
+      uniqueId: loaderReturn.uniqueId,
+      uniqueIds: [loaderReturn.uniqueId],
+      loaderType: loaderReturn.loaderType
+    } as LoaderReturn
   }
 
   // 文本类型
   const fileContent = fs.readFileSync(file.path, 'utf-8')
-
-  return await ragApplication.addLoader(
+  const loaderReturn = await ragApplication.addLoader(
     new TextLoader({ text: fileContent, chunkSize: base.chunkSize, chunkOverlap: base.chunkOverlap }) as any,
     forceReload
   )
+  return {
+    entriesAdded: loaderReturn.entriesAdded,
+    uniqueId: loaderReturn.uniqueId,
+    uniqueIds: [loaderReturn.uniqueId],
+    loaderType: loaderReturn.loaderType
+  } as LoaderReturn
 }

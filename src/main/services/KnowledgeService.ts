@@ -2,7 +2,7 @@ import * as fs from 'node:fs'
 import path from 'node:path'
 
 import { RAGApplication, RAGApplicationBuilder, TextLoader } from '@llm-tools/embedjs'
-import type { AddLoaderReturn, ExtractChunkData } from '@llm-tools/embedjs-interfaces'
+import type { ExtractChunkData } from '@llm-tools/embedjs-interfaces'
 import { LibSqlDb } from '@llm-tools/embedjs-libsql'
 import { SitemapLoader } from '@llm-tools/embedjs-loader-sitemap'
 import { WebLoader } from '@llm-tools/embedjs-loader-web'
@@ -10,6 +10,7 @@ import { AzureOpenAiEmbeddings, OpenAiEmbeddings } from '@llm-tools/embedjs-open
 import { addFileLoader } from '@main/loader'
 import { getInstanceName } from '@main/utils'
 import { getAllFiles } from '@main/utils/file'
+import type { LoaderReturn } from '@shared/config/types'
 import { FileType, KnowledgeBaseParams, KnowledgeItem } from '@types'
 import { app } from 'electron'
 import { v4 as uuidv4 } from 'uuid'
@@ -79,43 +80,67 @@ class KnowledgeService {
   public add = async (
     _: Electron.IpcMainInvokeEvent,
     { base, item, forceReload = false }: { base: KnowledgeBaseParams; item: KnowledgeItem; forceReload: boolean }
-  ): Promise<AddLoaderReturn> => {
+  ): Promise<LoaderReturn> => {
     const ragApplication = await this.getRagApplication(base)
 
     if (item.type === 'directory') {
       const directory = item.content as string
       const files = getAllFiles(directory)
       const loaderPromises = files.map((file) => addFileLoader(ragApplication, file, base, forceReload))
-      await Promise.all(loaderPromises)
-      return { entriesAdded: 0, uniqueId: `DirectoryLoader_${uuidv4()}`, loaderType: 'DirectoryLoader' }
+      const loaderResults = await Promise.all(loaderPromises)
+      const uniqueIds = loaderResults.map((result) => result.uniqueId)
+      return {
+        entriesAdded: loaderResults.length,
+        uniqueId: `DirectoryLoader_${uuidv4()}`,
+        uniqueIds,
+        loaderType: 'DirectoryLoader'
+      } as LoaderReturn
     }
 
     if (item.type === 'url') {
       const content = item.content as string
       if (content.startsWith('http')) {
-        return await ragApplication.addLoader(
+        const loaderReturn = await ragApplication.addLoader(
           new WebLoader({ urlOrContent: content, chunkSize: base.chunkSize, chunkOverlap: base.chunkOverlap }) as any,
           forceReload
         )
+        return {
+          entriesAdded: loaderReturn.entriesAdded,
+          uniqueId: loaderReturn.uniqueId,
+          uniqueIds: [loaderReturn.uniqueId],
+          loaderType: loaderReturn.loaderType
+        } as LoaderReturn
       }
     }
 
     if (item.type === 'sitemap') {
       const content = item.content as string
       // @ts-ignore loader type
-      return await ragApplication.addLoader(
+      const loaderReturn = await ragApplication.addLoader(
         new SitemapLoader({ url: content, chunkSize: base.chunkSize, chunkOverlap: base.chunkOverlap }) as any,
         forceReload
       )
+      return {
+        entriesAdded: loaderReturn.entriesAdded,
+        uniqueId: loaderReturn.uniqueId,
+        uniqueIds: [loaderReturn.uniqueId],
+        loaderType: loaderReturn.loaderType
+      } as LoaderReturn
     }
 
     if (item.type === 'note') {
       const content = item.content as string
       console.debug('chunkSize', base.chunkSize)
-      return await ragApplication.addLoader(
+      const loaderReturn = await ragApplication.addLoader(
         new TextLoader({ text: content, chunkSize: base.chunkSize, chunkOverlap: base.chunkOverlap }),
         forceReload
       )
+      return {
+        entriesAdded: loaderReturn.entriesAdded,
+        uniqueId: loaderReturn.uniqueId,
+        uniqueIds: [loaderReturn.uniqueId],
+        loaderType: loaderReturn.loaderType
+      } as LoaderReturn
     }
 
     if (item.type === 'file') {
@@ -124,15 +149,18 @@ class KnowledgeService {
       return await addFileLoader(ragApplication, file, base, forceReload)
     }
 
-    return { entriesAdded: 0, uniqueId: '', loaderType: '' }
+    return { entriesAdded: 0, uniqueId: '', uniqueIds: [''], loaderType: '' }
   }
 
   public remove = async (
     _: Electron.IpcMainInvokeEvent,
-    { uniqueId, base }: { uniqueId: string; base: KnowledgeBaseParams }
+    { uniqueId, uniqueIds, base }: { uniqueId: string; uniqueIds: string[]; base: KnowledgeBaseParams }
   ): Promise<void> => {
     const ragApplication = await this.getRagApplication(base)
-    await ragApplication.deleteLoader(uniqueId)
+    console.debug(`[ KnowledgeService Remove Item UniqueId: ${uniqueId}]`)
+    for (const id of uniqueIds) {
+      await ragApplication.deleteLoader(id)
+    }
   }
 
   public search = async (
