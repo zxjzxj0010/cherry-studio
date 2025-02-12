@@ -138,7 +138,6 @@ export const useKnowledge = (baseId: string) => {
   const removeItem = async (item: KnowledgeItem) => {
     dispatch(removeItemAction({ baseId, item }))
     if (base) {
-      console.log('removeItem', item)
       if (item?.uniqueId && item?.uniqueIds) {
         await window.api.knowledgeBase.remove({
           uniqueId: item.uniqueId,
@@ -159,12 +158,10 @@ export const useKnowledge = (baseId: string) => {
       return
     }
 
-    if (base && item.uniqueId) {
-      console.log('refreshItem', item)
-      // TODO 原先无uniqueIds，刷新函数需要测试
+    if (base && item.uniqueId && item.uniqueIds) {
       await window.api.knowledgeBase.remove({
         uniqueId: item.uniqueId,
-        uniqueIds: [item.uniqueId],
+        uniqueIds: item.uniqueIds,
         base: getKnowledgeBaseParams(base)
       })
       updateItem({
