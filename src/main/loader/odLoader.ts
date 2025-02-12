@@ -11,8 +11,8 @@ export enum OdType {
   undefined = 'undefined'
 }
 
-export class OdLoader<odType> extends BaseLoader<{ type: string }> {
-  private readonly odType: odType
+export class OdLoader<OdType> extends BaseLoader<{ type: string }> {
+  private readonly odType: OdType
   private readonly filePath: string
   private extractedText: string
   private config: OfficeParserConfig
@@ -23,7 +23,7 @@ export class OdLoader<odType> extends BaseLoader<{ type: string }> {
     chunkSize,
     chunkOverlap
   }: {
-    odType: odType
+    odType: OdType
     filePath: string
     chunkSize?: number
     chunkOverlap?: number
@@ -42,7 +42,7 @@ export class OdLoader<odType> extends BaseLoader<{ type: string }> {
     try {
       this.extractedText = await parseOfficeAsync(this.filePath, this.config)
     } catch (err) {
-      console.error(err)
+      console.error('odLoader error', err)
       throw err
     }
   }

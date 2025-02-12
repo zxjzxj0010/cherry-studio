@@ -1,19 +1,18 @@
 import * as fs from 'node:fs'
 import path from 'node:path'
 
-import { LocalPathLoader, RAGApplication, RAGApplicationBuilder, TextLoader } from '@llm-tools/embedjs'
+import { RAGApplication, RAGApplicationBuilder, TextLoader } from '@llm-tools/embedjs'
 import type { AddLoaderReturn, ExtractChunkData } from '@llm-tools/embedjs-interfaces'
 import { LibSqlDb } from '@llm-tools/embedjs-libsql'
-import { MarkdownLoader } from '@llm-tools/embedjs-loader-markdown'
-import { DocxLoader, ExcelLoader, PptLoader } from '@llm-tools/embedjs-loader-msoffice'
-import { PdfLoader } from '@llm-tools/embedjs-loader-pdf'
 import { SitemapLoader } from '@llm-tools/embedjs-loader-sitemap'
 import { WebLoader } from '@llm-tools/embedjs-loader-web'
 import { AzureOpenAiEmbeddings, OpenAiEmbeddings } from '@llm-tools/embedjs-openai'
-import { OdLoader, OdType } from '@main/loader/odLoader'
+import { addFileLoader } from '@main/loader'
 import { getInstanceName } from '@main/utils'
+import { getAllFiles } from '@main/utils/file'
 import { FileType, KnowledgeBaseParams, KnowledgeItem } from '@types'
 import { app } from 'electron'
+import { v4 as uuidv4 } from 'uuid'
 
 class KnowledgeService {
   private storageDir = path.join(app.getPath('userData'), 'Data', 'KnowledgeBase')
@@ -85,10 +84,10 @@ class KnowledgeService {
 
     if (item.type === 'directory') {
       const directory = item.content as string
-      return await ragApplication.addLoader(
-        new LocalPathLoader({ path: directory, chunkSize: base.chunkSize, chunkOverlap: base.chunkOverlap }) as any,
-        forceReload
-      )
+      const files = getAllFiles(directory)
+      const loaderPromises = files.map((file) => addFileLoader(ragApplication, file, base, forceReload))
+      await Promise.all(loaderPromises)
+      return { entriesAdded: 0, uniqueId: `DirectoryLoader_${uuidv4()}`, loaderType: 'DirectoryLoader' }
     }
 
     if (item.type === 'url') {
@@ -122,102 +121,7 @@ class KnowledgeService {
     if (item.type === 'file') {
       const file = item.content as FileType
 
-      if (file.ext === '.pdf') {
-        return await ragApplication.addLoader(
-          new PdfLoader({
-            filePathOrUrl: file.path,
-            chunkSize: base.chunkSize,
-            chunkOverlap: base.chunkOverlap
-          }) as any,
-          forceReload
-        )
-      }
-
-      if (file.ext === '.docx') {
-        return await ragApplication.addLoader(
-          new DocxLoader({
-            filePathOrUrl: file.path,
-            chunkSize: base.chunkSize,
-            chunkOverlap: base.chunkOverlap
-          }) as any,
-          forceReload
-        )
-      }
-
-      if (file.ext === '.pptx') {
-        return await ragApplication.addLoader(
-          new PptLoader({
-            filePathOrUrl: file.path,
-            chunkSize: base.chunkSize,
-            chunkOverlap: base.chunkOverlap
-          }) as any,
-          forceReload
-        )
-      }
-
-      if (file.ext === '.xlsx') {
-        return await ragApplication.addLoader(
-          new ExcelLoader({
-            filePathOrUrl: file.path,
-            chunkSize: base.chunkSize,
-            chunkOverlap: base.chunkOverlap
-          }) as any,
-          forceReload
-        )
-      }
-
-      if (['.odt', '.ods', '.odp'].includes(file.ext)) {
-        let odType: OdType = OdType.undefined
-        if (file.ext === '.odt') {
-          odType = OdType.OdtLoader
-        }
-        if (file.ext === '.ods') {
-          odType = OdType.OdsLoader
-        }
-        if (file.ext === '.odp') {
-          odType = OdType.OdpLoader
-        }
-        if (odType === OdType.undefined) {
-          throw new Error('Unknown odType')
-        }
-        return await ragApplication.addLoader(
-          new OdLoader({
-            odType,
-            filePath: file.path,
-            chunkSize: base.chunkSize,
-            chunkOverlap: base.chunkOverlap
-          }) as any,
-          forceReload
-        )
-      }
-      if (['.md'].includes(file.ext)) {
-        return await ragApplication.addLoader(
-          new MarkdownLoader({
-            filePathOrUrl: file.path,
-            chunkSize: base.chunkSize,
-            chunkOverlap: base.chunkOverlap
-          }) as any,
-          forceReload
-        )
-      }
-
-      const fileContent = fs.readFileSync(file.path, 'utf-8')
-
-      if (['.html'].includes(file.ext)) {
-        return await ragApplication.addLoader(
-          new WebLoader({
-            urlOrContent: fileContent,
-            chunkSize: base.chunkSize,
-            chunkOverlap: base.chunkOverlap
-          }) as any,
-          forceReload
-        )
-      }
-
-      return await ragApplication.addLoader(
-        new TextLoader({ text: fileContent, chunkSize: base.chunkSize, chunkOverlap: base.chunkOverlap }),
-        forceReload
-      )
+      return await addFileLoader(ragApplication, file, base, forceReload)
     }
 
     return { entriesAdded: 0, uniqueId: '', loaderType: '' }
