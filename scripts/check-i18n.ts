@@ -41,10 +41,10 @@ function syncRecursively(target: any, template: any): boolean {
   }
 
   // 删除 target 中存在但 template 中没有的 key
-  for (const key in target) {
-    if (!(key in template)) {
-      console.log(`移除多余属性：${key}`)
-      delete target[key]
+  for (const targetKey in target) {
+    if (!(targetKey in template)) {
+      console.log(`移除多余属性：${targetKey}`)
+      delete target[targetKey]
       isUpdated = true
     }
   }
