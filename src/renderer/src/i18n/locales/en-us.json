@@ -97,6 +97,7 @@
       "input.upload": "Upload image or document file",
       "input.upload.document": "Upload document file (model does not support images)",
       "input.web_search": "Enable web search",
+      "input.file_not_supported": "Model does not support this file type",
       "message.new.branch": "New Branch",
       "message.new.branch.created": "New Branch Created",
       "message.new.context": "New Context",
@@ -109,7 +110,7 @@
       "settings.context_count.tip": "The number of previous messages to keep in the context.",
       "settings.max": "Max",
       "settings.max_tokens": "Enable max tokens limit",
-      "settings.max_tokens.tip": "The maximum number of tokens the model can generate. Normal chat suggests 500-800. Short text generation suggests 800-2000. Code generation suggests 2000-3600. Long text generation suggests above 4000.",
+      "settings.max_tokens.tip": "The maximum number of tokens the model can generate. Need to consider the context limit of the model, otherwise an error will be reported",
       "settings.reset": "Reset",
       "settings.set_as_default": "Apply to default assistant",
       "settings.show_line_numbers": "Show line numbers in code",
@@ -117,6 +118,8 @@
       "settings.temperature.tip": "Higher values make the model more creative and unpredictable, while lower values make it more deterministic and precise.",
       "settings.top_p": "Top-P",
       "settings.top_p.tip": "Default value is 1, the smaller the value, the less variety in the answers, the easier to understand, the larger the value, the larger the range of the AI's vocabulary, the more diverse",
+      "settings.max_tokens.confirm": "Enable max tokens limit",
+      "settings.max_tokens.confirm_content": "Enable max tokens limit, affects the length of the result. Need to consider the context limit of the model, otherwise an error will be reported",
       "suggestions.title": "Suggested Questions",
       "thinking": "Thinking",
       "topics.auto_rename": "Auto Rename",
@@ -171,7 +174,8 @@
       "select": "Select",
       "topics": "Topics",
       "warning": "Warning",
-      "you": "You"
+      "you": "You",
+      "footnote": "Reference content"
     },
     "error": {
       "backup.file_format": "Backup file format error",
@@ -288,7 +292,7 @@
       "status_processing": "Processing",
       "title": "Knowledge Base",
       "url_added": "URL added",
-      "url_placeholder": "Enter URL",
+      "url_placeholder": "Enter URL, multiple URLs separated by Enter",
       "urls": "URLs"
     },
     "languages": {
@@ -337,8 +341,6 @@
       "error.enter.model": "Please select a model first",
       "error.enter.name": "Please enter the name of the knowledge base",
       "error.get_embedding_dimensions": "Failed to get embedding dimensions",
-      "error.invalid.enter.api.host": "Please enter a valid API host",
-      "error.invalid.enter.api.key": "Please enter a valid API key",
       "error.invalid.enter.model": "Please select a model",
       "error.invalid.proxy.url": "Invalid proxy URL",
       "error.invalid.webdav": "Invalid WebDAV settings",
@@ -350,7 +352,7 @@
       "message.code_style": "Code style",
       "message.delete.content": "Are you sure you want to delete this message?",
       "message.delete.title": "Delete Message",
-      "message.multi_model_style": "Multi-model answer style",
+      "message.multi_model_style": "Group style",
       "message.multi_model_style.fold": "Fold",
       "message.multi_model_style.horizontal": "Horizontal",
       "message.multi_model_style.vertical": "Vertical",
@@ -369,7 +371,9 @@
       "upgrade.success.button": "Restart",
       "upgrade.success.content": "Please restart the application to complete the upgrade",
       "upgrade.success.title": "Upgrade successfully",
-      "warn.notion.exporting": "Notion is importing, please do not import repeatedly"
+      "warn.notion.exporting": "Notion is importing, please do not import repeatedly",
+      "error.invalid.api.host": "Invalid API Host",
+      "error.invalid.api.key": "Invalid API Key"
     },
     "minapp": {
       "sidebar.add.title": "Add to sidebar",
@@ -498,7 +502,6 @@
       "zhipu": "ZHIPU AI"
     },
     "settings": {
-      "": "MinApp that have been added to the sidebar do not support hiding. If you want to hide them, please remove them from the sidebar first.",
       "about": "About & Feedback",
       "about.checkingUpdate": "Checking for updates...",
       "about.checkUpdate": "Check Update",
@@ -545,10 +548,8 @@
         "webdav.backup.button": "Backup to WebDAV",
         "webdav.host": "WebDAV Host",
         "webdav.host.placeholder": "http://localhost:8080",
-        "webdav.hour": "Hour",
         "webdav.hours": "Hours",
         "webdav.lastSync": "Last Backup",
-        "webdav.minute": "Minute",
         "webdav.minutes": "Minutes",
         "webdav.noSync": "Waiting for next backup",
         "webdav.password": "WebDAV Password",
@@ -607,7 +608,7 @@
       "messages.input.show_estimated_tokens": "Show estimated tokens",
       "messages.input.title": "Input Settings",
       "messages.markdown_rendering_input_message": "Markdown render input message",
-      "messages.math_engine": "Math render engine",
+      "messages.math_engine": "Math engine",
       "messages.metrics": "{{time_first_token_millsec}}ms to first token | {{token_speed}} tok/sec",
       "messages.model.title": "Model Settings",
       "messages.title": "Message Settings",
@@ -662,17 +663,6 @@
         "search_placeholder": "Search model id or name",
         "title": "Model Provider"
       },
-      "provider.api.url.preview": "Preview: {{url}}",
-      "provider.api.url.reset": "Reset",
-      "provider.api.url.tip": "Ending with / ignores v1, ending with # forces use of input address",
-      "provider.api_host": "API Host",
-      "provider.api_key": "API Key",
-      "provider.api_key.tip": "Multiple keys separated by commas",
-      "provider.api_version": "API Version",
-      "provider.check": "Check",
-      "provider.docs_check": "Check",
-      "provider.docs_more_details": "for more details",
-      "provider.search_placeholder": "Search model id or name",
       "proxy": {
         "mode": {
           "custom": "Custom Proxy",
@@ -751,6 +741,9 @@
       "quit": "Quit",
       "show_window": "Show Window",
       "visualization": "Visualization"
+    },
+    "docs": {
+      "title": "Docs"
     }
   }
 }

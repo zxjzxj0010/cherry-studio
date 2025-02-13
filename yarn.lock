@@ -2601,6 +2601,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/md5@npm:^2.3.5":
+  version: 2.3.5
+  resolution: "@types/md5@npm:2.3.5"
+  checksum: 10c0/aef9c40ab0ec61f1ae2acb04ee04e55b99eeec64af58176ef36d4feaf6aac335f32caca07eca0e3a1813fc362bf0b8663423250e24b39ebcfdc24c6ca4abe1cf
+  languageName: node
+  linkType: hard
+
 "@types/mdast@npm:^4.0.0":
   version: 4.0.4
   resolution: "@types/mdast@npm:4.0.4"
@@ -3002,6 +3009,7 @@ __metadata:
     "@types/fs-extra": "npm:^11"
     "@types/lodash": "npm:^4.17.5"
     "@types/markdown-it": "npm:^14"
+    "@types/md5": "npm:^2.3.5"
     "@types/node": "npm:^18.19.9"
     "@types/react": "npm:^18.2.48"
     "@types/react-dom": "npm:^18.2.18"
@@ -3042,7 +3050,7 @@ __metadata:
     markdown-it: "npm:^14.1.0"
     mime: "npm:^4.0.4"
     officeparser: "npm:^4.1.1"
-    openai: "patch:openai@npm%3A4.76.2#~/.yarn/patches/openai-npm-4.76.2-8ff1374617.patch"
+    openai: "patch:openai@npm%3A4.77.3#~/.yarn/patches/openai-npm-4.77.3-59c6d42e7a.patch"
     prettier: "npm:^3.2.4"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
@@ -3064,6 +3072,7 @@ __metadata:
     rollup-plugin-visualizer: "npm:^5.12.0"
     sass: "npm:^1.77.2"
     shiki: "npm:^1.22.2"
+    string-width: "npm:^7.2.0"
     styled-components: "npm:^6.1.11"
     tinycolor2: "npm:^1.6.0"
     tokenx: "npm:^0.4.1"
@@ -5397,6 +5406,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"emoji-regex@npm:^10.3.0":
+  version: 10.4.0
+  resolution: "emoji-regex@npm:10.4.0"
+  checksum: 10c0/a3fcedfc58bfcce21a05a5f36a529d81e88d602100145fcca3dc6f795e3c8acc4fc18fe773fbf9b6d6e9371205edb3afa2668ec3473fa2aa7fd47d2a9d46482d
+  languageName: node
+  linkType: hard
+
 "emoji-regex@npm:^8.0.0":
   version: 8.0.0
   resolution: "emoji-regex@npm:8.0.0"
@@ -6547,6 +6563,13 @@ __metadata:
   version: 2.0.5
   resolution: "get-caller-file@npm:2.0.5"
   checksum: 10c0/c6c7b60271931fa752aeb92f2b47e355eac1af3a2673f47c9589e8f8a41adc74d45551c1bc57b5e66a80609f10ffb72b6f575e4370d61cc3f7f3aaff01757cde
+  languageName: node
+  linkType: hard
+
+"get-east-asian-width@npm:^1.0.0":
+  version: 1.3.0
+  resolution: "get-east-asian-width@npm:1.3.0"
+  checksum: 10c0/1a049ba697e0f9a4d5514c4623781c5246982bdb61082da6b5ae6c33d838e52ce6726407df285cdbb27ec1908b333cf2820989bd3e986e37bb20979437fdf34b
   languageName: node
   linkType: hard
 
@@ -10165,29 +10188,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:4.76.2":
-  version: 4.76.2
-  resolution: "openai@npm:4.76.2"
-  dependencies:
-    "@types/node": "npm:^18.11.18"
-    "@types/node-fetch": "npm:^2.6.4"
-    abort-controller: "npm:^3.0.0"
-    agentkeepalive: "npm:^4.2.1"
-    form-data-encoder: "npm:1.7.2"
-    formdata-node: "npm:^4.3.2"
-    node-fetch: "npm:^2.6.7"
-  peerDependencies:
-    zod: ^3.23.8
-  peerDependenciesMeta:
-    zod:
-      optional: true
-  bin:
-    openai: bin/cli
-  checksum: 10c0/d78af0c2dd64ad24a2ce92deb92656b742b8120012e554fd562095f237ce06d84764217e040b437f955c6f26b7675f9321862a8937c8537f28ed6ead4b674559
-  languageName: node
-  linkType: hard
-
-"openai@npm:^4.77.0":
+"openai@npm:4.77.3":
   version: 4.77.3
   resolution: "openai@npm:4.77.3"
   dependencies:
@@ -10209,9 +10210,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@patch:openai@npm%3A4.76.2#~/.yarn/patches/openai-npm-4.76.2-8ff1374617.patch":
-  version: 4.76.2
-  resolution: "openai@patch:openai@npm%3A4.76.2#~/.yarn/patches/openai-npm-4.76.2-8ff1374617.patch::version=4.76.2&hash=849914"
+"openai@patch:openai@npm%3A4.77.3#~/.yarn/patches/openai-npm-4.77.3-59c6d42e7a.patch":
+  version: 4.77.3
+  resolution: "openai@patch:openai@npm%3A4.77.3#~/.yarn/patches/openai-npm-4.77.3-59c6d42e7a.patch::version=4.77.3&hash=c5d42a"
   dependencies:
     "@types/node": "npm:^18.11.18"
     "@types/node-fetch": "npm:^2.6.4"
@@ -10227,7 +10228,7 @@ __metadata:
       optional: true
   bin:
     openai: bin/cli
-  checksum: 10c0/09b66166fd3661b9b418addf0f3a7bc75434ee9163d4b3f89bb41e70cd9a366943c2e324ef5a05cf375831b27aee6516b96779b78f1e3d605ae605865384c1c2
+  checksum: 10c0/c3449d3d9945675d7debc4e3a68f58093400985e5275b29e4eb5610300ad3fa4589e527fda526ce770f9a945d7a1d03ffb33e34a3566f996a6947125aa761b1e
   languageName: node
   linkType: hard
 
@@ -13008,6 +13009,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"string-width@npm:^7.2.0":
+  version: 7.2.0
+  resolution: "string-width@npm:7.2.0"
+  dependencies:
+    emoji-regex: "npm:^10.3.0"
+    get-east-asian-width: "npm:^1.0.0"
+    strip-ansi: "npm:^7.1.0"
+  checksum: 10c0/eb0430dd43f3199c7a46dcbf7a0b34539c76fe3aa62763d0b0655acdcbdf360b3f66f3d58ca25ba0205f42ea3491fa00f09426d3b7d3040e506878fc7664c9b9
+  languageName: node
+  linkType: hard
+
 "string.prototype.matchall@npm:^4.0.12":
   version: 4.0.12
   resolution: "string.prototype.matchall@npm:4.0.12"
@@ -13123,7 +13135,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"strip-ansi@npm:^7.0.1":
+"strip-ansi@npm:^7.0.1, strip-ansi@npm:^7.1.0":
   version: 7.1.0
   resolution: "strip-ansi@npm:7.1.0"
   dependencies:
