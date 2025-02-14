@@ -90,6 +90,9 @@ export const getKnowledgeReferences = async (base: KnowledgeBase, message: Messa
         return item.score >= threshold
       })
     )
+  if (searchResults.length === 0) {
+    return { referencesContent: '', referencesCount: 0 }
+  }
 
   const _searchResults = await Promise.all(
     searchResults.map(async (item) => {
@@ -114,5 +117,5 @@ export const getKnowledgeReferences = async (base: KnowledgeBase, message: Messa
 
   const referencesContent = `\`\`\`json\n${JSON.stringify(references, null, 2)}\n\`\`\``
 
-  return referencesContent
+  return { referencesContent, referencesCount: references.length }
 }
