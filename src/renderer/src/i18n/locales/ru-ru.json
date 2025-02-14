@@ -293,7 +293,10 @@
       "title": "База знаний",
       "url_added": "URL добавлен",
       "url_placeholder": "Введите URL, несколько URL через Enter",
-      "urls": "URL-адреса"
+      "urls": "URL-адреса",
+      "threshold_tooltip": "Порог совпадения",
+      "threshold_placeholder": "По умолчанию (0.6)",
+      "threshold_too_large_or_small": "Порог не может быть больше 1 или меньше 0"
     },
     "languages": {
       "arabic": "Арабский",
