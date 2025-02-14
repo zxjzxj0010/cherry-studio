@@ -243,6 +243,7 @@ export interface KnowledgeBase {
   documentCount?: number
   chunkSize?: number
   chunkOverlap?: number
+  threshold?: number
 }
 
 export type KnowledgeBaseParams = {

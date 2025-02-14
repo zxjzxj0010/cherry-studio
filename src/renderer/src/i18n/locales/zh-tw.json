@@ -293,7 +293,10 @@
       "title": "知識庫",
       "url_added": "網址已添加",
       "url_placeholder": "請輸入網址, 多個網址用回車分隔",
-      "urls": "網址"
+      "urls": "網址",
+      "threshold_tooltip": "匹配度閾值",
+      "threshold_placeholder": "預設值(0.6)",
+      "threshold_too_large_or_small": "閾值不能大於1或小於0"
     },
     "languages": {
       "arabic": "阿拉伯文",
