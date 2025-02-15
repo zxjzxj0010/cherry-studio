@@ -3,6 +3,7 @@ import { DEFAULT_KNOWLEDGE_DOCUMENT_COUNT, DEFAULT_KNOWLEDGE_THRESHOLD } from '@
 import { getEmbeddingMaxContext } from '@renderer/config/embedings'
 import AiProvider from '@renderer/providers/AiProvider'
 import { FileType, KnowledgeBase, KnowledgeBaseParams, Message } from '@renderer/types'
+import { t } from 'i18next'
 import { take } from 'lodash'
 
 import { getProviderByModel } from './AssistantService'
@@ -91,6 +92,11 @@ export const getKnowledgeReferences = async (base: KnowledgeBase, message: Messa
       })
     )
   if (searchResults.length === 0) {
+    window.message.info({
+      content: t('knowledge.no_match'),
+      duration: 4,
+      key: 'knowledge-base-no-match-info'
+    })
     return { referencesContent: '', referencesCount: 0 }
   }
 

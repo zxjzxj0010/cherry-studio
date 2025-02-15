@@ -295,8 +295,10 @@
       "url_placeholder": "Введите URL, несколько URL через Enter",
       "urls": "URL-адреса",
       "threshold_tooltip": "Порог совпадения",
-      "threshold_placeholder": "По умолчанию (0.6)",
-      "threshold_too_large_or_small": "Порог не может быть больше 1 или меньше 0"
+      "threshold_placeholder": "По умолчанию (0.0)",
+      "threshold_too_large_or_small": "Порог не может быть больше 1 или меньше 0",
+      "no_match": "Не найдено содержимого в базе знаний.",
+      "threshold": "Порог соответствия"
     },
     "languages": {
       "arabic": "Арабский",

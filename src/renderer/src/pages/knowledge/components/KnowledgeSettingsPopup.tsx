@@ -178,7 +178,8 @@ const PopupContainer: React.FC<Props> = ({ base: _base, resolve }) => {
         </Form.Item>
         <Form.Item
           name="threshold"
-          label={t('knowledge.threshold_tooltip')}
+          label={t('knowledge.threshold')}
+          tooltip={{ title: t('knowledge.threshold_tooltip') }}
           initialValue={base.threshold}
           rules={[
             {
