@@ -33,7 +33,7 @@ const KnowledgeBaseSelector: FC<Props> = ({ selectedBases, onSelect }) => {
         <>
           <Select
             mode="multiple"
-            defaultValue={selectedBases?.map((base) => base.id)}
+            value={selectedBases?.map((base) => base.id)}
             allowClear
             placeholder={t('agents.add.knowledge_base.placeholder')}
             menuItemSelectedIcon={<CheckOutlined />}
@@ -49,16 +49,6 @@ const KnowledgeBaseSelector: FC<Props> = ({ selectedBases, onSelect }) => {
 
 const KnowledgeBaseButton: FC<Props> = ({ selectedBases, onSelect, disabled, ToolbarButton }) => {
   const { t } = useTranslation()
-
-  // if (selectedBases && selectedBases?.length > 0) {
-  //   return (
-  //     <Tooltip placement="top" title={selectedBases[0].name} arrow>
-  //       <ToolbarButton type="text" onClick={() => onSelect([])}>
-  //         <FileSearchOutlined style={{ color: selectedBases[0] ? 'var(--color-link)' : 'var(--color-icon)' }} />
-  //       </ToolbarButton>
-  //     </Tooltip>
-  //   )
-  // }
 
   return (
     <Tooltip placement="top" title={t('chat.input.knowledge_base')} arrow>

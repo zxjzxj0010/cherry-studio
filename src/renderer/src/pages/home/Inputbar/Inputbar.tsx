@@ -461,10 +461,6 @@ const Inputbar: FC<Props> = ({ assistant: _assistant, setActiveTopic }) => {
     setSelectedKnowledgeBases(showKnowledgeIcon ? (assistant.knowledge_bases ?? []) : [])
   }, [assistant.id, assistant.knowledge_bases, showKnowledgeIcon])
 
-  useEffect(() => {
-    console.warn('selected bases updated', selectedKnowledgeBases)
-  }, [selectedKnowledgeBases])
-
   const textareaRows = window.innerHeight >= 1000 || isBubbleStyle ? 2 : 1
 
   const handleKnowledgeBaseSelect = (bases?: KnowledgeBase[]) => {

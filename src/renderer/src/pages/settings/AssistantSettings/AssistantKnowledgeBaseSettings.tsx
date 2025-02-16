@@ -28,7 +28,6 @@ const AssistantKnowledgeBaseSettings: React.FC<Props> = ({ assistant, updateAssi
   const onUpdate = (value) => {
     const knowledge_bases = value.map((id) => knowledgeState.bases.find((b) => b.id === id))
     const _assistant = { ...assistant, knowledge_bases }
-    console.warn('_assistant', _assistant)
     updateAssistant(_assistant)
   }
 
@@ -40,7 +39,7 @@ const AssistantKnowledgeBaseSettings: React.FC<Props> = ({ assistant, updateAssi
       <Select
         mode="multiple"
         allowClear
-        defaultValue={assistant.knowledge_bases?.map((b) => b.id)}
+        value={assistant.knowledge_bases?.map((b) => b.id)}
         placeholder={t('agents.add.knowledge_base.placeholder')}
         menuItemSelectedIcon={<CheckOutlined />}
         options={knowledgeOptions}
