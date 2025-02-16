@@ -121,7 +121,5 @@ export const getKnowledgeReferences = async (base: KnowledgeBase, message: Messa
     })
   )
 
-  const referencesContent = `\`\`\`json\n${JSON.stringify(references, null, 2)}\n\`\`\``
-
-  return { referencesContent, referencesCount: references.length }
+  return references
 }
