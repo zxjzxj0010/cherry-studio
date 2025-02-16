@@ -5,6 +5,7 @@ import { getKnowledgeReferences } from '@renderer/services/KnowledgeService'
 import store from '@renderer/store'
 import { Assistant, GenerateImageParams, Message, Model, Provider, Suggestion } from '@renderer/types'
 import { delay, isJSON, parseJSON } from '@renderer/utils'
+import { t } from 'i18next'
 import OpenAI from 'openai'
 
 import { CompletionsParams } from '.'
@@ -97,7 +98,18 @@ export default abstract class BaseProvider {
         references
       }
     })
-    const allReferences = await Promise.all(allReferencesPromises).then((value) => value.flat())
+    const allReferences = (await Promise.all(allReferencesPromises))
+      .filter((result) => result.references && result.references.length > 0)
+      .flat()
+
+    if (allReferences.length === 0) {
+      window.message.info({
+        content: t('knowledge.no_match'),
+        duration: 4,
+        key: 'knowledge-base-no-match-info'
+      })
+      return message.content
+    }
     const allReferencesContent = `\`\`\`json\n${JSON.stringify(allReferences, null, 2)}\n\`\`\``
 
     return REFERENCE_PROMPT.replace('{question}', message.content).replace('{references}', allReferencesContent)
