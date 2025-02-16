@@ -31,11 +31,6 @@ const KnowledgeBaseSelector: FC<Props> = ({ selectedBases, onSelect }) => {
         <EmptyMessage>{t('knowledge.no_bases')}</EmptyMessage>
       ) : (
         <>
-          {/* {selectedBases && ( */}
-          {/*   <Button type="link" block onClick={() => onSelect([])} style={{ textAlign: 'left' }}> */}
-          {/*     {t('knowledge.clear_selection')} */}
-          {/*   </Button> */}
-          {/* )} */}
           <Select
             mode="multiple"
             defaultValue={selectedBases?.map((base) => base.id)}
@@ -44,19 +39,8 @@ const KnowledgeBaseSelector: FC<Props> = ({ selectedBases, onSelect }) => {
             menuItemSelectedIcon={<CheckOutlined />}
             options={knowledgeOptions}
             onChange={(value) => onSelect(knowledgeState.bases.filter((b) => value.includes(b.id)))}
-            style={{ width: '100px' }}
+            style={{ width: '200px' }}
           />
-
-          {/* {knowledgeState.bases.map((base) => ( */}
-          {/*   <Button */}
-          {/*     key={base.id} */}
-          {/*     type={selectedBase?.id === base.id ? 'primary' : 'text'} */}
-          {/*     block */}
-          {/*     onClick={() => onSelect(base)} */}
-          {/*     style={{ textAlign: 'left' }}> */}
-          {/*     {base.name} */}
-          {/*   </Button> */}
-          {/* ))} */}
         </>
       )}
     </SelectorContainer>

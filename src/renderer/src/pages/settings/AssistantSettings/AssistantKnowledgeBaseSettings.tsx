@@ -26,8 +26,9 @@ const AssistantKnowledgeBaseSettings: React.FC<Props> = ({ assistant, updateAssi
   })
 
   const onUpdate = (value) => {
-    const knowledge_base = knowledgeState.bases.find((t) => t.id === value)
-    const _assistant = { ...assistant, knowledge_base }
+    const knowledge_bases = value.map((id) => knowledgeState.bases.find((b) => b.id === id))
+    const _assistant = { ...assistant, knowledge_bases }
+    console.warn('_assistant', _assistant)
     updateAssistant(_assistant)
   }
 
