@@ -52,7 +52,6 @@ interface Props {
 
 let _text = ''
 let _files: FileType[] = []
-let _bases: KnowledgeBase[] | []
 
 const Inputbar: FC<Props> = ({ assistant: _assistant, setActiveTopic }) => {
   const [text, setText] = useState(_text)
@@ -83,7 +82,7 @@ const Inputbar: FC<Props> = ({ assistant: _assistant, setActiveTopic }) => {
   const [spaceClickCount, setSpaceClickCount] = useState(0)
   const spaceClickTimer = useRef<NodeJS.Timeout>()
   const [isTranslating, setIsTranslating] = useState(false)
-  const [selectedKnowledgeBases, setSelectedKnowledgeBases] = useState<KnowledgeBase[] | []>(_bases)
+  const [selectedKnowledgeBases, setSelectedKnowledgeBases] = useState<KnowledgeBase[]>([])
   const [mentionModels, setMentionModels] = useState<Model[]>([])
   const [isMentionPopupOpen, setIsMentionPopupOpen] = useState(false)
 
@@ -104,7 +103,6 @@ const Inputbar: FC<Props> = ({ assistant: _assistant, setActiveTopic }) => {
 
   _text = text
   _files = files
-  _bases = selectedKnowledgeBases
 
   const sendMessage = useCallback(async () => {
     await modelGenerating()
@@ -458,6 +456,7 @@ const Inputbar: FC<Props> = ({ assistant: _assistant, setActiveTopic }) => {
   }, [])
 
   useEffect(() => {
+    // if assistant knowledge bases are undefined return []
     setSelectedKnowledgeBases(showKnowledgeIcon ? (assistant.knowledge_bases ?? []) : [])
   }, [assistant.id, assistant.knowledge_bases, showKnowledgeIcon])
 

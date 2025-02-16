@@ -8,7 +8,7 @@ import styled from 'styled-components'
 
 interface Props {
   selectedBases?: KnowledgeBase[]
-  onSelect: (bases?: KnowledgeBase[]) => void
+  onSelect: (bases: KnowledgeBase[]) => void
   disabled?: boolean
   ToolbarButton?: any
 }
@@ -16,32 +16,29 @@ interface Props {
 const KnowledgeBaseSelector: FC<Props> = ({ selectedBases, onSelect }) => {
   const { t } = useTranslation()
   const knowledgeState = useAppSelector((state) => state.knowledge)
-  const knowledgeOptions: SelectProps['options'] = []
-
-  knowledgeState.bases.forEach((base) => {
-    knowledgeOptions.push({
-      label: base.name,
-      value: base.id
-    })
-  })
+  const knowledgeOptions: SelectProps['options'] = knowledgeState.bases.map((base) => ({
+    label: base.name,
+    value: base.id
+  }))
 
   return (
     <SelectorContainer>
       {knowledgeState.bases.length === 0 ? (
         <EmptyMessage>{t('knowledge.no_bases')}</EmptyMessage>
       ) : (
-        <>
-          <Select
-            mode="multiple"
-            value={selectedBases?.map((base) => base.id)}
-            allowClear
-            placeholder={t('agents.add.knowledge_base.placeholder')}
-            menuItemSelectedIcon={<CheckOutlined />}
-            options={knowledgeOptions}
-            onChange={(value) => onSelect(knowledgeState.bases.filter((b) => value.includes(b.id)))}
-            style={{ width: '200px' }}
-          />
-        </>
+        <Select
+          mode="multiple"
+          value={selectedBases?.map((base) => base.id)}
+          allowClear
+          placeholder={t('agents.add.knowledge_base.placeholder')}
+          menuItemSelectedIcon={<CheckOutlined />}
+          options={knowledgeOptions}
+          onChange={(ids) => {
+            const newSelected = knowledgeState.bases.filter((base) => ids.includes(base.id))
+            onSelect(newSelected)
+          }}
+          style={{ width: '200px' }}
+        />
       )}
     </SelectorContainer>
   )
@@ -57,8 +54,10 @@ const KnowledgeBaseButton: FC<Props> = ({ selectedBases, onSelect, disabled, Too
         content={<KnowledgeBaseSelector selectedBases={selectedBases} onSelect={onSelect} />}
         overlayStyle={{ maxWidth: 400 }}
         trigger="click">
-        <ToolbarButton type="text" onClick={() => selectedBases} disabled={disabled}>
-          <FileSearchOutlined style={{ color: selectedBases ? 'var(--color-link)' : 'var(--color-icon)' }} />
+        <ToolbarButton type="text" disabled={disabled}>
+          <FileSearchOutlined
+            style={{ color: selectedBases && selectedBases?.length > 0 ? 'var(--color-link)' : 'var(--color-icon)' }}
+          />
         </ToolbarButton>
       </Popover>
     </Tooltip>
