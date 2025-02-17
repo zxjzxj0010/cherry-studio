@@ -6,7 +6,7 @@ import { isEmbeddingModel } from '@renderer/config/models'
 import { useKnowledge } from '@renderer/hooks/useKnowledge'
 import { useProviders } from '@renderer/hooks/useProvider'
 import { getModelUniqId } from '@renderer/services/ModelService'
-import { KnowledgeBase } from '@renderer/types'
+import { KnowledgeBase, Model } from '@renderer/types'
 import { Alert, Form, Input, InputNumber, Modal, Select, Slider } from 'antd'
 import { sortBy } from 'lodash'
 import { useEffect, useState } from 'react'
@@ -62,13 +62,20 @@ const PopupContainer: React.FC<Props> = ({ base: _base, resolve }) => {
   const onOk = async () => {
     try {
       const values = await form.validateFields()
+      let isEmeddingModelChange = false
+      const currentModel = JSON.parse(values.model) as Model
+      if (base.model.id !== currentModel.id && base.model.provider !== currentModel.provider) {
+        isEmeddingModelChange = true
+      }
       const newBase = {
         ...base,
         name: values.name,
+        model: JSON.parse(values.model) as Model,
         documentCount: values.documentCount || DEFAULT_KNOWLEDGE_DOCUMENT_COUNT,
         chunkSize: values.chunkSize,
         chunkOverlap: values.chunkOverlap,
-        threshold: values.threshold ?? undefined
+        threshold: values.threshold ?? undefined,
+        isEmeddingModelChange
       }
       updateKnowledgeBase(newBase)
       setOpen(false)
@@ -113,7 +120,7 @@ const PopupContainer: React.FC<Props> = ({ base: _base, resolve }) => {
           initialValue={getModelUniqId(base.model)}
           tooltip={{ title: t('models.embedding_model_tooltip'), placement: 'right' }}
           rules={[{ required: true, message: t('message.error.enter.model') }]}>
-          <Select style={{ width: '100%' }} options={selectOptions} placeholder={t('settings.models.empty')} disabled />
+          <Select style={{ width: '100%' }} options={selectOptions} placeholder={t('settings.models.empty')} />
         </Form.Item>
 
         <Form.Item
