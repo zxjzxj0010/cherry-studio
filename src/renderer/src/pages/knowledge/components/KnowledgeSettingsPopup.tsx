@@ -35,7 +35,7 @@ const PopupContainer: React.FC<Props> = ({ base: _base, resolve }) => {
   const { t } = useTranslation()
   const { providers } = useProviders()
   const { base, updateKnowledgeBase } = useKnowledge(_base.id)
-  const [showPopConfirm, setShowPopConfirm] = useState(false) // 控制 Popconfirm 显示
+  const [showPopConfirm, setShowPopConfirm] = useState(false)
 
   useEffect(() => {
     form.setFieldsValue({ documentCount: base?.documentCount || 6 })
@@ -63,11 +63,8 @@ const PopupContainer: React.FC<Props> = ({ base: _base, resolve }) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const handleSubmit = useCallback(
     async (values: FormData) => {
-      let isEmeddingModelChange = false
       const currentModel = JSON.parse(values.model) as Model
-      if (base.model.id !== currentModel.id || base.model.provider !== currentModel.provider) {
-        isEmeddingModelChange = true
-      }
+      const isEmeddingModelChange = base.model.id !== currentModel.id || base.model.provider !== currentModel.provider
       const newBase = {
         ...base,
         name: values.name,
