@@ -7,9 +7,9 @@ import { useKnowledge } from '@renderer/hooks/useKnowledge'
 import { useProviders } from '@renderer/hooks/useProvider'
 import { getModelUniqId } from '@renderer/services/ModelService'
 import { KnowledgeBase, Model } from '@renderer/types'
-import { Alert, Form, Input, InputNumber, Modal, Select, Slider } from 'antd'
+import { Alert, Button, Form, Input, InputNumber, Modal, Popconfirm, Select, Slider, Space } from 'antd'
 import { sortBy } from 'lodash'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 interface ShowParams {
@@ -35,6 +35,7 @@ const PopupContainer: React.FC<Props> = ({ base: _base, resolve }) => {
   const { t } = useTranslation()
   const { providers } = useProviders()
   const { base, updateKnowledgeBase } = useKnowledge(_base.id)
+  const [showPopConfirm, setShowPopConfirm] = useState(false) // 控制 Popconfirm 显示
 
   useEffect(() => {
     form.setFieldsValue({ documentCount: base?.documentCount || 6 })
@@ -59,18 +60,18 @@ const PopupContainer: React.FC<Props> = ({ base: _base, resolve }) => {
     }))
     .filter((group) => group.options.length > 0)
 
-  const onOk = async () => {
-    try {
-      const values = await form.validateFields()
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const handleSubmit = useCallback(
+    async (values: FormData) => {
       let isEmeddingModelChange = false
       const currentModel = JSON.parse(values.model) as Model
-      if (base.model.id !== currentModel.id && base.model.provider !== currentModel.provider) {
+      if (base.model.id !== currentModel.id || base.model.provider !== currentModel.provider) {
         isEmeddingModelChange = true
       }
       const newBase = {
         ...base,
         name: values.name,
-        model: JSON.parse(values.model) as Model,
+        model: currentModel,
         documentCount: values.documentCount || DEFAULT_KNOWLEDGE_DOCUMENT_COUNT,
         chunkSize: values.chunkSize,
         chunkOverlap: values.chunkOverlap,
@@ -80,9 +81,35 @@ const PopupContainer: React.FC<Props> = ({ base: _base, resolve }) => {
       updateKnowledgeBase(newBase)
       setOpen(false)
       resolve(newBase)
+    },
+    [base, updateKnowledgeBase, resolve]
+  )
+  const onCheckFormAndSubmit = async () => {
+    try {
+      const values = await form.validateFields()
+      const currentModel = JSON.parse(values.model) as Model
+      if (base.model.id !== currentModel.id || base.model.provider !== currentModel.provider) {
+        setShowPopConfirm(true)
+      } else {
+        handleSubmit(values)
+      }
     } catch (error) {
       console.error('Validation failed:', error)
     }
+  }
+  const onConfirm = async () => {
+    try {
+      const values = await form.validateFields()
+      handleSubmit(values)
+    } catch (error) {
+      console.error('Validation failed:', error)
+    } finally {
+      setShowPopConfirm(false)
+    }
+  }
+
+  const onCancelPopConfirm = () => {
+    setShowPopConfirm(false)
   }
 
   const onCancel = () => {
@@ -99,11 +126,26 @@ const PopupContainer: React.FC<Props> = ({ base: _base, resolve }) => {
     <Modal
       title={t('knowledge.settings')}
       open={open}
-      onOk={onOk}
       onCancel={onCancel}
       afterClose={onClose}
       destroyOnClose
       maskClosable={false}
+      footer={
+        <Space>
+          <Button onClick={onCancel}>{t('common.cancel')}</Button>
+          <Popconfirm
+            title={t('knowledge.embedding_model_change_tooltip')}
+            open={showPopConfirm}
+            onConfirm={onConfirm}
+            onCancel={onCancelPopConfirm}
+            okText={t('common.confirm')}
+            cancelText={t('common.cancel')}>
+            <Button type="primary" onClick={onCheckFormAndSubmit}>
+              {t('common.save')}
+            </Button>
+          </Popconfirm>
+        </Space>
+      }
       centered>
       <Form form={form} layout="vertical">
         <Form.Item
