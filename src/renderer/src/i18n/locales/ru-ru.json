@@ -140,12 +140,8 @@
       "topics.prompt": "Тематические подсказки",
       "topics.prompt.tips": "Тематические подсказки: Дополнительные подсказки, предоставленные для текущей темы",
       "topics.prompt.edit.title": "Редактировать подсказки темы",
-      "artifacts.preview.modal.title": "Предварительный просмотр опций",
-      "artifacts.preview.modal.content": "Где вы хотите просмотреть этот файл?",
-      "artifacts.preview.modal.okText": "В предварительном просмотре в приложении",
-      "artifacts.preview.modal.cancelText": "Открыть в внешнем браузере",
-      "artifacts.preview.modal.error.title": "Ошибка",
-      "artifacts.preview.modal.error.content": "Не удается открыть в внешнем браузере. Пожалуйста, убедитесь, что ваша среда поддерживает эту функцию."
+      "artifacts.button.openExternal": "Открыть во внешнем браузере",
+      "artifacts.preview.openExternal.error.content": "Внешний браузер открылся с ошибкой"
     },
     "common": {
       "add": "Добавить",
