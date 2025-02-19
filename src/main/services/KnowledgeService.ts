@@ -15,11 +15,12 @@ import { FileType, KnowledgeBaseParams, KnowledgeItem } from '@types'
 import { app } from 'electron'
 import { v4 as uuidv4 } from 'uuid'
 
+import KnowledgeWatchService from './KnowledgeWatchService'
 import { windowService } from './WindowService'
 
 class KnowledgeService {
   private storageDir = path.join(app.getPath('userData'), 'Data', 'KnowledgeBase')
-
+  private knowledgeWatcher = new KnowledgeWatchService().getKnowledgeWatcher()
   constructor() {
     this.initStorageDir()
   }
@@ -95,17 +96,18 @@ class KnowledgeService {
       const files = getAllFiles(directory)
       const totalFiles = files.length
       let processedFiles = 0
-      const loaderPromises = files.map(async (file) => {
+      const promises = files.map(async (file) => {
+        this.knowledgeWatcher.add(file.path)
         const result = await addFileLoader(ragApplication, file, base, forceReload)
         processedFiles++
 
         sendDirectoryProcessingPercent(totalFiles, processedFiles)
         return result
       })
-      const loaderResults = await Promise.all(loaderPromises)
-      const uniqueIds = loaderResults.map((result) => result.uniqueId)
+      const results = await Promise.all(promises)
+      const uniqueIds = results.map((result) => result.uniqueId)
       return {
-        entriesAdded: loaderResults.length,
+        entriesAdded: results.length,
         uniqueId: `DirectoryLoader_${uuidv4()}`,
         uniqueIds,
         loaderType: 'DirectoryLoader'
@@ -176,6 +178,7 @@ class KnowledgeService {
     for (const id of uniqueIds) {
       await ragApplication.deleteLoader(id)
     }
+    // TODO knowledgeWatcher unwatch
   }
 
   public search = async (

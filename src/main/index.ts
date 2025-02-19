@@ -3,6 +3,7 @@ import { app } from 'electron'
 import installExtension, { REDUX_DEVTOOLS } from 'electron-devtools-installer'
 
 import { registerIpc } from './ipc'
+import KnowledgeWatchService from './services/KnowledgeWatchService'
 import { registerShortcuts } from './services/ShortcutService'
 import { TrayService } from './services/TrayService'
 import { windowService } from './services/WindowService'
@@ -79,4 +80,7 @@ if (!app.requestSingleInstanceLock()) {
 
   // In this file you can include the rest of your app"s specific main process
   // code. You can also put them in separate files and require them here.
+
+  const knowledgeWatcher = new KnowledgeWatchService().getKnowledgeWatcher()
+  console.warn('app init watcher', knowledgeWatcher.getWatched())
 }
