@@ -1,5 +1,8 @@
+import * as fs from 'node:fs'
+
 import { WatchItem } from '@main/utils/watcher'
 import chokidar, { FSWatcher } from 'chokidar'
+import * as crypto from 'crypto'
 
 class KnowledgeWatchService {
   private static instance: KnowledgeWatchService
@@ -37,6 +40,17 @@ class KnowledgeWatchService {
   public addFile(filePath: string, uniqueId: string, hash: string): void {
     this.knowledgeWatcher.add(filePath)
     this.fileMap.set(filePath, { uniqueId, hash })
+  }
+  /**
+   * 检查文件是否更改
+   */
+  public checkFile(filePath: string, hash: string): boolean {
+    if (!fs.existsSync(filePath)) {
+      return false
+    }
+    const fileContent = fs.readFileSync(filePath, 'utf-8')
+    const currentHash = crypto.createHash('sha256').update(fileContent).digest('hex')
+    return hash !== currentHash
   }
 
   /**
