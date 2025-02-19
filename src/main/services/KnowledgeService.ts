@@ -12,6 +12,7 @@ import { getInstanceName } from '@main/utils'
 import { getAllFiles } from '@main/utils/file'
 import type { LoaderReturn } from '@shared/config/types'
 import { FileType, KnowledgeBaseParams, KnowledgeItem } from '@types'
+import * as crypto from 'crypto'
 import { app } from 'electron'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -20,7 +21,7 @@ import { windowService } from './WindowService'
 
 class KnowledgeService {
   private storageDir = path.join(app.getPath('userData'), 'Data', 'KnowledgeBase')
-  private knowledgeWatcher = new KnowledgeWatchService().getKnowledgeWatcher()
+  private knowledgeWatcherService = KnowledgeWatchService.getInstance()
   constructor() {
     this.initStorageDir()
   }
@@ -97,8 +98,13 @@ class KnowledgeService {
       const totalFiles = files.length
       let processedFiles = 0
       const promises = files.map(async (file) => {
-        this.knowledgeWatcher.add(file.path)
+        const fileContent = fs.readFileSync(file.path, 'utf-8')
+        const fileHash = crypto.createHash('sha256').update(fileContent).digest('hex')
         const result = await addFileLoader(ragApplication, file, base, forceReload)
+        const uniqueId = result.uniqueId || path.basename(file.path)
+
+        this.knowledgeWatcherService.addFile(file.path, uniqueId, fileHash)
+
         processedFiles++
 
         sendDirectoryProcessingPercent(totalFiles, processedFiles)
