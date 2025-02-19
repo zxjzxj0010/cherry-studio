@@ -3034,6 +3034,7 @@ __metadata:
     eslint-plugin-simple-import-sort: "npm:^12.1.1"
     eslint-plugin-unused-imports: "npm:^4.0.0"
     fs-extra: "npm:^11.2.0"
+    hotkeys-js: "npm:^3.13.9"
     html2canvas: "npm:^1.4.1"
     i18next: "npm:^23.11.5"
     lodash: "npm:^4.17.21"
@@ -7172,6 +7173,13 @@ __metadata:
   version: 1.0.0
   resolution: "hot-patcher@npm:1.0.0"
   checksum: 10c0/0c3ee3e1cb45f8b09ecb6d9af11b35b05f94b0767e09a303d89a7b6073b55ee98bd5c9b563ff17bfa1add55bbe3ff7598bbbb8c035578e05dd12631f2351cdb6
+  languageName: node
+  linkType: hard
+
+"hotkeys-js@npm:^3.13.9":
+  version: 3.13.9
+  resolution: "hotkeys-js@npm:3.13.9"
+  checksum: 10c0/83511e7e812395289231605f6c50974f85c270de0316b21ffc4b794d29f2a1aa927a29644c77f1f77ac6e3228fa91fb4bc5f01fb5b27e00196af4d8c5a4a6693
   languageName: node
   linkType: hard
 

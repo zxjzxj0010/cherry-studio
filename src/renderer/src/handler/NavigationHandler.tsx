@@ -1,3 +1,4 @@
+import hotkeys from 'hotkeys-js'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -5,14 +6,13 @@ const NavigationHandler: React.FC = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const handleOpenSettings = () => {
+    hotkeys('command+,, ctrl+,', function () {
+      console.log('show_settings')
       navigate('/settings/provider')
-    }
-
-    window.electron.ipcRenderer.on('open-settings', handleOpenSettings)
+    })
 
     return () => {
-      window.electron.ipcRenderer.removeListener('open-settings', handleOpenSettings)
+      hotkeys.unbind('command+,, ctrl+,')
     }
   }, [navigate])
 

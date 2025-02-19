@@ -37,10 +37,6 @@ function getShortcutHandler(shortcut: Shortcut) {
       return () => {
         windowService.toggleMiniWindow()
       }
-    case 'show_settings':
-      return (window: BrowserWindow) => {
-        window.webContents.send('open-settings')
-      }
     default:
       return null
   }
