@@ -1,20 +1,15 @@
-import hotkeys from 'hotkeys-js'
-import { useEffect } from 'react'
+import { useHotkeys } from 'react-hotkeys-hook'
 import { useNavigate } from 'react-router-dom'
 
 const NavigationHandler: React.FC = () => {
   const navigate = useNavigate()
-
-  useEffect(() => {
-    hotkeys('command+,, ctrl+,', function () {
-      console.log('show_settings')
+  useHotkeys(
+    'meta+,',
+    function () {
       navigate('/settings/provider')
-    })
-
-    return () => {
-      hotkeys.unbind('command+,, ctrl+,')
-    }
-  }, [navigate])
+    },
+    { splitKey: '!' }
+  )
 
   return null
 }
