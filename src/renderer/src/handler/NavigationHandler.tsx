@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 const NavigationHandler: React.FC = () => {
   const navigate = useNavigate()
   useHotkeys(
-    'meta+,',
+    'meta+, ! ctrl+,',
     function () {
       navigate('/settings/provider')
     },

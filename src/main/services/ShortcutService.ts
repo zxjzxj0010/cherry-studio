@@ -7,7 +7,6 @@ import { windowService } from './WindowService'
 
 let showAppAccelerator: string | null = null
 let showMiniWindowAccelerator: string | null = null
-let showSettingsAccelerator: string | null = null
 
 function getShortcutHandler(shortcut: Shortcut) {
   switch (shortcut.key) {
@@ -143,9 +142,6 @@ export function registerShortcuts(window: BrowserWindow) {
           showMiniWindowAccelerator = accelerator
         }
 
-        if (shortcut.key === 'show_settings' && shortcut.enabled) {
-          showSettingsAccelerator = accelerator
-        }
         if (shortcut.key.includes('zoom')) {
           switch (shortcut.key) {
             case 'zoom_in':
@@ -193,12 +189,6 @@ export function registerShortcuts(window: BrowserWindow) {
           convertShortcutRecordedByKeyboardEventKeyValueToElectronGlobalShortcutFormat(showMiniWindowAccelerator)
         handler && globalShortcut.register(accelerator, () => handler(window))
       }
-      if (showSettingsAccelerator) {
-        const handler = getShortcutHandler({ key: 'show_settings' } as Shortcut)
-        const accelerator =
-          convertShortcutRecordedByKeyboardEventKeyValueToElectronGlobalShortcutFormat(showSettingsAccelerator)
-        handler && globalShortcut.register(accelerator, () => handler(window))
-      }
     } catch (error) {
       Logger.error('[ShortcutService] Failed to unregister shortcuts')
     }
@@ -216,7 +206,6 @@ export function unregisterAllShortcuts() {
   try {
     showAppAccelerator = null
     showMiniWindowAccelerator = null
-    showSettingsAccelerator = null
     globalShortcut.unregisterAll()
   } catch (error) {
     Logger.error('[ShortcutService] Failed to unregister all shortcuts')
