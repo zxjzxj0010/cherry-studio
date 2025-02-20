@@ -20,7 +20,7 @@ import { getProviderName } from '@renderer/services/ProviderService'
 import { FileType, FileTypes, KnowledgeBase } from '@renderer/types'
 import { bookExts, documentExts, textExts, thirdPartyApplicationExts } from '@shared/config/constant'
 import { Alert, Button, Card, Divider, message, Tag, Tooltip, Typography, Upload } from 'antd'
-import { FC } from 'react'
+import { FC, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
@@ -60,6 +60,19 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
 
   const providerName = getProviderName(base?.model.provider || '')
   const disabled = !base?.version || !providerName
+  // 文件改变时refresh
+  useEffect(() => {
+    console.log('[KnowledgeContent] Refreshing items...')
+    const cleanup = window.electron.ipcRenderer.on('directory-content-changed', (_, uniqueId: string) => {
+      const item = directoryItems.find((item) => item.id === uniqueId)
+      if (!item) return
+      refreshItem(item)
+    })
+
+    return () => {
+      cleanup()
+    }
+  })
 
   if (!base) {
     return null

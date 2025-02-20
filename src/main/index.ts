@@ -3,6 +3,7 @@ import { app } from 'electron'
 import installExtension, { REDUX_DEVTOOLS } from 'electron-devtools-installer'
 
 import { registerIpc } from './ipc'
+import { knowledgeWatchService } from './services/KnowledgeWatchService'
 import { registerShortcuts } from './services/ShortcutService'
 import { TrayService } from './services/TrayService'
 import { windowService } from './services/WindowService'
@@ -59,6 +60,7 @@ if (!app.requestSingleInstanceLock()) {
 
     registerIpc(mainWindow, app)
 
+    knowledgeWatchService.checkAllFiles()
     if (process.env.NODE_ENV === 'development') {
       installExtension(REDUX_DEVTOOLS)
         .then((name) => console.log(`Added Extension:  ${name}`))

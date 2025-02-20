@@ -1,12 +1,14 @@
-import KnowledgeWatchService from '@main/services/KnowledgeWatchService'
+import { knowledgeWatchService } from '@main/services/KnowledgeWatchService'
 import { app } from 'electron'
 import * as fs from 'fs'
 import * as path from 'path'
 
 export type WatchItem = {
+  type: 'directory' | 'file'
   uniqueId: string
   path: string
   hash: string
+  children?: WatchItem[]
 }
 
 export type KnowledgeWatchList = {
@@ -32,16 +34,15 @@ export async function initWatcher(): Promise<KnowledgeWatchList | null> {
 export async function loadWatcher(): Promise<void> {
   const knowledgeWatchList = await initWatcher()
   if (!knowledgeWatchList || !knowledgeWatchList.watchItems) return
-  const watchService = KnowledgeWatchService.getInstance()
-  watchService.loadWatchItems(knowledgeWatchList.watchItems)
+  console.log('Loading watcher:', knowledgeWatchList.watchItems)
+  knowledgeWatchService.loadWatchItems(knowledgeWatchList.watchItems)
 }
 
 /**
  * 保存当前 watcher 数据到 watcher.json
  */
 export async function saveWatcher(): Promise<void> {
-  const watchService = KnowledgeWatchService.getInstance()
-  const watchItems = watchService.getWatchItems()
+  const watchItems = knowledgeWatchService.getWatchItems()
   console.log('Saving watcher:', watchItems)
   const storageDir = path.join(app.getPath('userData'), 'Data', 'Files')
   const knowledgeWatcherFile = path.join(storageDir, 'KnowledgeWatcher.json')

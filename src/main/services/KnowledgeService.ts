@@ -16,12 +16,11 @@ import * as crypto from 'crypto'
 import { app } from 'electron'
 import { v4 as uuidv4 } from 'uuid'
 
-import KnowledgeWatchService from './KnowledgeWatchService'
+import { knowledgeWatchService } from './KnowledgeWatchService'
 import { windowService } from './WindowService'
 
 class KnowledgeService {
   private storageDir = path.join(app.getPath('userData'), 'Data', 'KnowledgeBase')
-  private knowledgeWatcherService = KnowledgeWatchService.getInstance()
   constructor() {
     this.initStorageDir()
   }
@@ -94,6 +93,10 @@ class KnowledgeService {
 
     if (item.type === 'directory') {
       const directory = item.content as string
+      const directoryId = `DirectoryLoader_${uuidv4()}`
+      // 先添加目录本身
+      const dirHash = crypto.createHash('sha256').update(directory).digest('hex')
+      knowledgeWatchService.addFile('directory', directory, directoryId, dirHash)
       const files = getAllFiles(directory)
       const totalFiles = files.length
       let processedFiles = 0
@@ -103,7 +106,7 @@ class KnowledgeService {
         const result = await addFileLoader(ragApplication, file, base, forceReload)
         const uniqueId = result.uniqueId || path.basename(file.path)
 
-        this.knowledgeWatcherService.addFile(file.path, uniqueId, fileHash)
+        knowledgeWatchService.addFile('file', file.path, uniqueId, fileHash, directoryId)
 
         processedFiles++
 
@@ -114,7 +117,7 @@ class KnowledgeService {
       const uniqueIds = results.map((result) => result.uniqueId)
       return {
         entriesAdded: results.length,
-        uniqueId: `DirectoryLoader_${uuidv4()}`,
+        uniqueId: directoryId,
         uniqueIds,
         loaderType: 'DirectoryLoader'
       } as LoaderReturn
@@ -168,8 +171,11 @@ class KnowledgeService {
 
     if (item.type === 'file') {
       const file = item.content as FileType
-
-      return await addFileLoader(ragApplication, file, base, forceReload)
+      const fileContent = fs.readFileSync(file.path, 'utf-8')
+      const fileHash = crypto.createHash('sha256').update(fileContent).digest('hex')
+      const result = await addFileLoader(ragApplication, file, base, forceReload)
+      knowledgeWatchService.addFile(item.type, file.path, result.uniqueId, fileHash)
+      return result
     }
 
     return { entriesAdded: 0, uniqueId: '', uniqueIds: [''], loaderType: '' }
