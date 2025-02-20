@@ -17,11 +17,14 @@ import Scrollbar from '@renderer/components/Scrollbar'
 import { useKnowledge } from '@renderer/hooks/useKnowledge'
 import FileManager from '@renderer/services/FileManager'
 import { getProviderName } from '@renderer/services/ProviderService'
+import { RootState } from '@renderer/store'
+import { clearPendingChanges } from '@renderer/store/knowledgeFile'
 import { FileType, FileTypes, KnowledgeBase } from '@renderer/types'
 import { bookExts, documentExts, textExts, thirdPartyApplicationExts } from '@shared/config/constant'
 import { Alert, Button, Card, Divider, message, Tag, Tooltip, Typography, Upload } from 'antd'
 import { FC, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 
 import KnowledgeSearchPopup from './components/KnowledgeSearchPopup'
@@ -60,19 +63,26 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
 
   const providerName = getProviderName(base?.model.provider || '')
   const disabled = !base?.version || !providerName
-  // 文件改变时refresh
-  useEffect(() => {
-    console.log('[KnowledgeContent] Refreshing items...')
-    const cleanup = window.electron.ipcRenderer.on('directory-content-changed', (_, uniqueId: string) => {
-      const item = directoryItems.find((item) => item.id === uniqueId)
-      if (!item) return
-      refreshItem(item)
-    })
+  const dispatch = useDispatch()
+  const pendingChanges = useSelector((state: RootState) => state.knowledgeFile.pendingChanges)
 
-    return () => {
-      cleanup()
+  useEffect(() => {
+    // 处理所有待处理的变更
+    if (pendingChanges.length > 0) {
+      pendingChanges.forEach((change) => {
+        if (change.type === 'directory-changed') {
+          const item = directoryItems.find((item) => item.uniqueId === change.uniqueId)
+          console.log('Directory changed:', item)
+          if (item) {
+            refreshItem(item)
+          }
+        }
+      })
+
+      // 清除已处理的变更
+      dispatch(clearPendingChanges())
     }
-  })
+  }, [pendingChanges, directoryItems, refreshItem, dispatch])
 
   if (!base) {
     return null

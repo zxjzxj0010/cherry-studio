@@ -19,6 +19,7 @@ class KnowledgeWatchService {
       children?: string[]
     }
   > = new Map()
+  private originalHashMap = new Map<string, string>()
 
   private constructor() {
     this.knowledgeWatcher = chokidar.watch([], {
@@ -114,6 +115,8 @@ class KnowledgeWatchService {
   public loadWatchItems(items: WatchItem[]): void {
     const loadItem = (item: WatchItem, parentId?: string) => {
       this.knowledgeWatcher.add(item.path)
+      this.originalHashMap.set(item.path, item.hash)
+
       this.fileMap.set(item.path, {
         fileType: item.type,
         uniqueId: item.uniqueId,
@@ -137,33 +140,56 @@ class KnowledgeWatchService {
       return
     }
 
-    console.log('fileMap entries', this.fileMap)
+    console.log('Checking files with original hashes:', this.originalHashMap)
 
     for (const [filePath, fileInfo] of this.fileMap.entries()) {
-      if (!fs.existsSync(filePath)) {
-        this.fileMap.delete(filePath)
-        console.log(`File ${filePath} has been removed`)
-        mainWindow.webContents.send('file-removed', fileInfo.uniqueId)
-        continue
-      }
+      try {
+        if (!fs.existsSync(filePath)) {
+          this.fileMap.delete(filePath)
+          this.originalHashMap.delete(filePath)
+          console.log(`File ${filePath} has been removed`)
+          mainWindow.webContents.send('file-removed', fileInfo.uniqueId)
+          continue
+        }
 
-      if (fileInfo.fileType === 'file') {
+        const stats = await fs.promises.stat(filePath)
+        if (!stats.isFile()) {
+          continue
+        }
+
         const fileContent = await fs.promises.readFile(filePath, 'utf-8')
         const currentHash = crypto.createHash('sha256').update(fileContent).digest('hex')
+        const originalHash = this.originalHashMap.get(filePath)
 
-        if (fileInfo.hash !== currentHash) {
+        console.log('Checking file:', filePath)
+        console.log('Original hash:', originalHash)
+        console.log('Current hash:', currentHash)
+
+        if (originalHash !== currentHash) {
+          // 更新文件Map中的哈希值
           fileInfo.hash = currentHash
           this.fileMap.set(filePath, fileInfo)
-          console.log(`File ${filePath} has been changed`)
+
+          console.warn(`File ${filePath} has changed from initial state`)
           mainWindow.webContents.send('file-changed', fileInfo.uniqueId)
-          // 如果是文件夹内的文件变化，也通知文件夹的变化
+
           if (fileInfo.parentId) {
-            console.log(`Directory ${fileInfo.parentId} has been changed`)
+            console.warn(`Directory ${fileInfo.parentId} content changed`)
             mainWindow.webContents.send('directory-content-changed', fileInfo.parentId)
           }
         }
+      } catch (error) {
+        console.error(`Error checking file ${filePath}:`, error)
       }
     }
+    this.clearOriginalHashes()
+
+    console.log('All files checked against original state')
+  }
+
+  // 在所有检查完成后，可以选择是否清理originalHashMap
+  private clearOriginalHashes(): void {
+    this.originalHashMap.clear()
   }
 
   public getWatchItems(): WatchItem[] {

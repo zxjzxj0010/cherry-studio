@@ -60,7 +60,12 @@ if (!app.requestSingleInstanceLock()) {
 
     registerIpc(mainWindow, app)
 
-    knowledgeWatchService.checkAllFiles()
+    // 等待窗口加载完成后再检查文件
+    mainWindow.webContents.on('did-finish-load', async () => {
+      console.log('Window did-finish-load')
+
+      await knowledgeWatchService.checkAllFiles()
+    })
     if (process.env.NODE_ENV === 'development') {
       installExtension(REDUX_DEVTOOLS)
         .then((name) => console.log(`Added Extension:  ${name}`))
