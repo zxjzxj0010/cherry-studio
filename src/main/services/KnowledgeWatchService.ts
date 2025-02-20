@@ -9,6 +9,8 @@ import { windowService } from './WindowService'
 class KnowledgeWatchService {
   private static instance: KnowledgeWatchService
   private knowledgeWatcher: FSWatcher
+
+  // 用于app关闭时保存watcher / app开启时加载watcher
   private fileMap: Map<
     string,
     {
@@ -19,6 +21,8 @@ class KnowledgeWatchService {
       children?: string[]
     }
   > = new Map()
+
+  // 用于app打开时比较文件是否更改
   private originalHashMap = new Map<string, string>()
 
   private constructor() {
@@ -35,8 +39,6 @@ class KnowledgeWatchService {
   }
 
   private setupWatcherEvents() {
-    const mainWindow = windowService.getMainWindow()
-
     this.knowledgeWatcher
       .on('add', (filePath) => {
         console.log(`File ${filePath} has been added`)
@@ -47,7 +49,6 @@ class KnowledgeWatchService {
         this.handleFileChange(filePath)
       })
       .on('unlink', (filePath) => {
-        console.log(`File ${filePath} has been removed`)
         const fileInfo = this.fileMap.get(filePath)
         if (fileInfo && fileInfo.parentId) {
           const parentInfo = Array.from(this.fileMap.entries()).find(([, info]) => info.uniqueId === fileInfo.parentId)
@@ -58,12 +59,45 @@ class KnowledgeWatchService {
           }
         }
         this.fileMap.delete(filePath)
-        if (mainWindow && fileInfo) {
-          mainWindow.webContents.send('file-removed', fileInfo.uniqueId)
+      })
+      .on('unlinkDir', (dirPath) => {
+        const dirInfo = this.fileMap.get(dirPath)
+        if (!dirInfo) return
+
+        // 递归删除所有子文件/目录的记录
+        const deleteChildren = (parentPath: string) => {
+          const parentInfo = this.fileMap.get(parentPath)
+          if (!parentInfo?.children) return
+
+          for (const childId of parentInfo.children) {
+            const childEntry = Array.from(this.fileMap.entries()).find(([, info]) => info.uniqueId === childId)
+            if (childEntry) {
+              const [childPath, childInfo] = childEntry
+              if (childInfo.children) {
+                deleteChildren(childPath)
+              }
+              this.fileMap.delete(childPath)
+            }
+          }
         }
+
+        // 删除该目录的所有子项
+        deleteChildren(dirPath)
+
+        // 更新父目录的 children 信息
+        if (dirInfo.parentId) {
+          const parentInfo = Array.from(this.fileMap.entries()).find(([, info]) => info.uniqueId === dirInfo.parentId)
+          if (parentInfo) {
+            const [parentPath, parentData] = parentInfo
+            parentData.children = parentData.children?.filter((id) => id !== dirInfo.uniqueId)
+            this.fileMap.set(parentPath, parentData)
+          }
+        }
+
+        // 删除目录本身的记录
+        this.fileMap.delete(dirPath)
       })
   }
-
   private async handleFileChange(filePath: string) {
     const mainWindow = windowService.getMainWindow()
     const fileInfo = this.fileMap.get(filePath)
@@ -101,6 +135,7 @@ class KnowledgeWatchService {
       parentId,
       children: fileType === 'directory' ? [] : undefined
     })
+    console.log(`Watching ${filePath}`)
 
     if (parentId) {
       const parentEntry = Array.from(this.fileMap.entries()).find(([, info]) => info.uniqueId === parentId)
@@ -110,6 +145,37 @@ class KnowledgeWatchService {
         this.fileMap.set(parentPath, parentInfo)
       }
     }
+  }
+
+  public removeFile(uniqueId: string) {
+    const filePath = this.fileMap.entries().find(([, info]) => info.uniqueId === uniqueId)?.[0]
+    if (!filePath) return
+
+    const fileInfo = this.fileMap.get(filePath)
+    if (fileInfo?.fileType === 'directory') {
+      const unwatchChildren = (parentPath: string) => {
+        const parentInfo = this.fileMap.get(parentPath)
+        if (!parentInfo?.children) return
+
+        for (const childId of parentInfo.children) {
+          const childEntry = Array.from(this.fileMap.entries()).find(([, info]) => info.uniqueId === childId)
+          if (childEntry) {
+            const [childPath, childInfo] = childEntry
+            if (childInfo.fileType === 'directory') {
+              unwatchChildren(childPath)
+            }
+            this.knowledgeWatcher.unwatch(childPath)
+            this.fileMap.delete(childPath)
+            console.log(`Unwatching ${childPath}`)
+          }
+        }
+      }
+      unwatchChildren(filePath)
+    }
+
+    this.knowledgeWatcher.unwatch(filePath)
+    this.fileMap.delete(filePath)
+    console.log(`Unwatching ${filePath}`)
   }
 
   public loadWatchItems(items: WatchItem[]): void {

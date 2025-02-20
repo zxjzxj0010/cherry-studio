@@ -96,7 +96,7 @@ class KnowledgeService {
       const directoryId = `DirectoryLoader_${uuidv4()}`
       // 先添加目录本身
       const dirHash = crypto.createHash('sha256').update(directory).digest('hex')
-      knowledgeWatchService.addFile('directory', directory, directoryId, dirHash)
+      knowledgeWatchService.addFile(item.type, directory, directoryId, dirHash)
       const files = getAllFiles(directory)
       const totalFiles = files.length
       let processedFiles = 0
@@ -190,7 +190,7 @@ class KnowledgeService {
     for (const id of uniqueIds) {
       await ragApplication.deleteLoader(id)
     }
-    // TODO knowledgeWatcher unwatch
+    knowledgeWatchService.removeFile(uniqueId)
   }
 
   public search = async (
