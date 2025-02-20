@@ -6,7 +6,7 @@ const GlobalEventListener: React.FC = () => {
   const dispatch = useDispatch()
 
   useEffect(() => {
-    const cleanup = window.electron.ipcRenderer.on('directory-content-changed', (_, uniqueId: string) => {
+    const directoryCleanup = window.electron.ipcRenderer.on('directory-content-changed', (_, uniqueId: string) => {
       console.log('directory-content-changed', uniqueId)
       dispatch(
         addPendingChange({
@@ -16,7 +16,20 @@ const GlobalEventListener: React.FC = () => {
       )
     })
 
-    return () => cleanup()
+    const fileCleanup = window.electron.ipcRenderer.on('file-changed', (_, uniqueId: string) => {
+      console.log('file-changed', uniqueId)
+      dispatch(
+        addPendingChange({
+          type: 'file-changed',
+          uniqueId
+        })
+      )
+    })
+
+    return () => {
+      directoryCleanup()
+      fileCleanup()
+    }
   }, [dispatch])
 
   return null

@@ -140,8 +140,6 @@ class KnowledgeWatchService {
       return
     }
 
-    console.log('Checking files with original hashes:', this.originalHashMap)
-
     for (const [filePath, fileInfo] of this.fileMap.entries()) {
       try {
         if (!fs.existsSync(filePath)) {
@@ -161,10 +159,6 @@ class KnowledgeWatchService {
         const currentHash = crypto.createHash('sha256').update(fileContent).digest('hex')
         const originalHash = this.originalHashMap.get(filePath)
 
-        console.log('Checking file:', filePath)
-        console.log('Original hash:', originalHash)
-        console.log('Current hash:', currentHash)
-
         if (originalHash !== currentHash) {
           // 更新文件Map中的哈希值
           fileInfo.hash = currentHash
@@ -183,8 +177,6 @@ class KnowledgeWatchService {
       }
     }
     this.clearOriginalHashes()
-
-    console.log('All files checked against original state')
   }
 
   // 在所有检查完成后，可以选择是否清理originalHashMap

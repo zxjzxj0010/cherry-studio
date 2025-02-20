@@ -15,11 +15,10 @@ import PromptPopup from '@renderer/components/Popups/PromptPopup'
 import TextEditPopup from '@renderer/components/Popups/TextEditPopup'
 import Scrollbar from '@renderer/components/Scrollbar'
 import { useKnowledge } from '@renderer/hooks/useKnowledge'
-import FileManager from '@renderer/services/FileManager'
 import { getProviderName } from '@renderer/services/ProviderService'
 import { RootState } from '@renderer/store'
 import { clearPendingChanges } from '@renderer/store/knowledgeFile'
-import { FileType, FileTypes, KnowledgeBase } from '@renderer/types'
+import { FileType, FileTypes, KnowledgeBase, KnowledgeItem } from '@renderer/types'
 import { bookExts, documentExts, textExts, thirdPartyApplicationExts } from '@shared/config/constant'
 import { Alert, Button, Card, Divider, message, Tag, Tooltip, Typography, Upload } from 'antd'
 import { FC, useEffect } from 'react'
@@ -67,22 +66,30 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
   const pendingChanges = useSelector((state: RootState) => state.knowledgeFile.pendingChanges)
 
   useEffect(() => {
-    // 处理所有待处理的变更
-    if (pendingChanges.length > 0) {
-      pendingChanges.forEach((change) => {
-        if (change.type === 'directory-changed') {
-          const item = directoryItems.find((item) => item.uniqueId === change.uniqueId)
-          console.log('Directory changed:', item)
-          if (item) {
-            refreshItem(item)
-          }
-        }
-      })
-
-      // 清除已处理的变更
-      dispatch(clearPendingChanges())
+    if (pendingChanges.length === 0) {
+      return
     }
-  }, [pendingChanges, directoryItems, refreshItem, dispatch])
+
+    pendingChanges.forEach((change) => {
+      const { type, uniqueId } = change
+
+      let item: KnowledgeItem | undefined
+      if (type === 'directory-changed') {
+        item = directoryItems.find((item) => item.uniqueId === uniqueId)
+      } else if (type === 'file-changed') {
+        console.log('file-changed', fileItems[0].uniqueId, '|', uniqueId)
+        item = fileItems.find((item) => item.uniqueId === uniqueId)
+        console.log('file-changed', item)
+      }
+
+      if (item) {
+        console.debug(`[KnowledgeContent] ${type}:`, item)
+        refreshItem(item)
+      }
+    })
+
+    dispatch(clearPendingChanges())
+  }, [pendingChanges, directoryItems, fileItems, refreshItem, dispatch])
 
   if (!base) {
     return null
@@ -122,9 +129,10 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
         type: file.type as FileTypes,
         created_at: new Date()
       }))
-      console.debug('[KnowledgeContent] Uploading files:', _files, files)
-      const uploadedFiles = await FileManager.uploadFiles(_files)
-      addFiles(uploadedFiles)
+      // console.debug('[KnowledgeContent] Uploading files:', _files, files)
+      // const uploadedFiles = await FileManager.uploadFiles(_files)
+      // addFiles(uploadedFiles)
+      addFiles(_files)
     }
   }
 
