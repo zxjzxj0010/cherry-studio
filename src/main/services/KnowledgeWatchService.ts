@@ -113,6 +113,9 @@ class KnowledgeWatchService {
       }
 
       this.fileMap.set(filePath, fileInfo)
+      if (fileType === 'directory') {
+        console.log('[KnowledgeWatchService]', this.fileMap.get(filePath)?.uniqueId)
+      }
       this.updateParentOnAdd(parentId, uniqueId)
 
       console.log(`Added watch for ${filePath}`)
@@ -217,12 +220,12 @@ class KnowledgeWatchService {
   private notifyFileChange(fileInfo: FileInfo): void {
     const mainWindow = windowService.getMainWindow()
     if (!mainWindow) return
-
-    mainWindow.webContents.send('file-changed', fileInfo.uniqueId)
-    console.log('file changed', fileInfo.uniqueId)
+    // 如果文件在目录中，通知目录内容变更
     if (fileInfo.parentId) {
       mainWindow.webContents.send('directory-content-changed', fileInfo.parentId)
+      return
     }
+    mainWindow.webContents.send('file-changed', fileInfo.uniqueId)
   }
 
   private notifyFileRemoval(uniqueId: string): void {
@@ -308,7 +311,7 @@ class KnowledgeWatchService {
 
     for (const [filePath, fileInfo] of this.fileMap.entries()) {
       try {
-        await this.checkSingleFile(filePath, fileInfo, mainWindow)
+        await this.checkPath(filePath, fileInfo, mainWindow)
       } catch (error) {
         console.debug('[KnowledgeWatchService] Error checking file:', error)
       }
@@ -317,31 +320,43 @@ class KnowledgeWatchService {
     this.originalMtimeMap.clear()
   }
 
-  private async checkSingleFile(
-    filePath: string,
-    fileInfo: FileInfo,
-    mainWindow: Electron.BrowserWindow
-  ): Promise<void> {
-    // 检查文件是否存在
-    if (!fs.existsSync(filePath)) {
-      this.fileMap.delete(filePath)
-      this.originalMtimeMap.delete(filePath)
-      console.log(`File removed: ${filePath}`)
+  private async checkPath(path: string, fileInfo: FileInfo, mainWindow: Electron.BrowserWindow): Promise<void> {
+    if (!fs.existsSync(path)) {
+      this.fileMap.delete(path)
+      this.originalMtimeMap.delete(path)
+      console.log(`${fileInfo.fileType} removed: ${path}`)
       mainWindow.webContents.send('file-removed', fileInfo.uniqueId)
       return
     }
 
-    // 检查文件类型
-    const stats = await fs.promises.stat(filePath)
-    if (!stats.isFile()) return
+    const stats = await fs.promises.stat(path)
+    if (fileInfo.fileType === 'file' && stats.isFile()) {
+      await this.checkFileChanges(path, stats)
+    } else if (fileInfo.fileType === 'directory' && stats.isDirectory()) {
+      this.checkDirectoryChanges(path, fileInfo, mainWindow, stats)
+    }
+  }
 
-    const currentMtime = stats.mtime
-    // 检查文件内容变化
+  private async checkFileChanges(filePath: string, stats: fs.Stats): Promise<void> {
+    const currentMtime = stats.mtime.toISOString()
     const originalMtime = this.originalMtimeMap.get(filePath)
-
-    if (originalMtime !== currentMtime.toISOString() && originalMtime !== undefined) {
+    if (originalMtime && originalMtime !== currentMtime) {
       console.log(`File changed: ${filePath}`)
       await this.handleFileChange(filePath)
+    }
+  }
+
+  private checkDirectoryChanges(
+    dirPath: string,
+    dirInfo: FileInfo,
+    mainWindow: Electron.BrowserWindow,
+    stats: fs.Stats
+  ): void {
+    const currentMtime = stats.mtime.toISOString()
+    const originalMtime = this.originalMtimeMap.get(dirPath)
+    if (originalMtime && originalMtime !== currentMtime) {
+      console.log(`Directory content changed: ${dirPath}`)
+      mainWindow.webContents.send('directory-content-changed', dirInfo.uniqueId)
     }
   }
 }

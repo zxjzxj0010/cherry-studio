@@ -1,9 +1,10 @@
-import { addPendingChange } from '@renderer/store/knowledgeFile'
+import { addPendingChange, clearPendingChanges } from '@renderer/store/knowledgeFile'
 import { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 
 const GlobalEventListener: React.FC = () => {
   const dispatch = useDispatch()
+  dispatch(clearPendingChanges())
 
   useEffect(() => {
     const directoryCleanup = window.electron.ipcRenderer.on('directory-content-changed', (_, uniqueId: string) => {

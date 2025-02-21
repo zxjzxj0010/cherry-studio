@@ -66,6 +66,8 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
   const pendingChanges = useSelector((state: RootState) => state.knowledgeFile.pendingChanges)
 
   useEffect(() => {
+    console.log('[KnowledgeContent] Directrory items:', directoryItems)
+    console.log('[KnowledgeContent] Pending changes:', pendingChanges)
     if (pendingChanges.length === 0) {
       return
     }
