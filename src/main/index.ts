@@ -46,14 +46,20 @@ if (!app.requestSingleInstanceLock()) {
 
     const mainWindow = windowService.createMainWindow()
     new TrayService()
+    // 监听隐藏事件
+    mainWindow.on('hide', async () => {
+      await saveWatcher()
+    })
 
-    app.on('activate', function () {
+    app.on('activate', async function () {
       const mainWindow = windowService.getMainWindow()
       if (!mainWindow || mainWindow.isDestroyed()) {
         windowService.createMainWindow()
       } else {
         windowService.showMainWindow()
       }
+      await loadWatcher()
+      await knowledgeWatchService.checkAllFiles()
     })
     registerShortcuts(mainWindow)
 

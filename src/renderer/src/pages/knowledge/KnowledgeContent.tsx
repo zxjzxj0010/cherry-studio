@@ -66,8 +66,6 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
   const pendingChanges = useSelector((state: RootState) => state.knowledgeFile.pendingChanges)
 
   useEffect(() => {
-    console.log('[KnowledgeContent] Directrory items:', directoryItems)
-    console.log('[KnowledgeContent] Pending changes:', pendingChanges)
     if (pendingChanges.length === 0) {
       return
     }
@@ -79,19 +77,34 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
       if (type === 'directory-changed') {
         item = directoryItems.find((item) => item.uniqueId === uniqueId)
       } else if (type === 'file-changed') {
-        console.log('file-changed', fileItems[0].uniqueId, '|', uniqueId)
         item = fileItems.find((item) => item.uniqueId === uniqueId)
-        console.log('file-changed', item)
+      } else if (type === 'file-removed') {
+        item = fileItems.find((item) => item.uniqueId === uniqueId)
+      } else if (type === 'directory-removed') {
+        item = directoryItems.find((item) => item.uniqueId === uniqueId)
       }
-
-      if (item) {
-        console.debug(`[KnowledgeContent] ${type}:`, item)
-        refreshItem(item)
+      switch (type) {
+        case 'directory-changed':
+        case 'file-changed':
+          if (item) {
+            console.log('[KnowledgeContent] Refreshing item:', item)
+            refreshItem(item)
+          }
+          break
+        case 'directory-removed':
+        case 'file-removed':
+          if (item) {
+            console.log('[KnowledgeContent] Removing item:', item)
+            removeItem(item)
+          }
+          break
+        default:
+          break
       }
     })
 
     dispatch(clearPendingChanges())
-  }, [pendingChanges, directoryItems, fileItems, refreshItem, dispatch])
+  }, [pendingChanges, directoryItems, fileItems, refreshItem, removeItem, dispatch])
 
   if (!base) {
     return null

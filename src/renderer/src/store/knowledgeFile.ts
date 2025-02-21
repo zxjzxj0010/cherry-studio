@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 interface KnowledgeFileChange {
-  type: 'file-changed' | 'directory-changed'
+  type: 'file-changed' | 'directory-changed' | 'file-removed' | 'directory-removed'
   uniqueId: string
 }
 

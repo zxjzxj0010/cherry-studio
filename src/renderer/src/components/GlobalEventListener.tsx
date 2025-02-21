@@ -7,6 +7,24 @@ const GlobalEventListener: React.FC = () => {
   dispatch(clearPendingChanges())
 
   useEffect(() => {
+    const fileRemoveCleanup = window.electron.ipcRenderer.on('file-removed', (_, uniqueId: string) => {
+      console.log('file-removed', uniqueId)
+      dispatch(
+        addPendingChange({
+          type: 'file-removed',
+          uniqueId
+        })
+      )
+    })
+    const directoryRemoveCleanup = window.electron.ipcRenderer.on('directory-removed', (_, uniqueId: string) => {
+      console.log('directory-removed', uniqueId)
+      dispatch(
+        addPendingChange({
+          type: 'directory-removed',
+          uniqueId
+        })
+      )
+    })
     const directoryCleanup = window.electron.ipcRenderer.on('directory-content-changed', (_, uniqueId: string) => {
       console.log('directory-content-changed', uniqueId)
       dispatch(
@@ -30,6 +48,8 @@ const GlobalEventListener: React.FC = () => {
     return () => {
       directoryCleanup()
       fileCleanup()
+      fileRemoveCleanup()
+      directoryRemoveCleanup()
     }
   }, [dispatch])
 

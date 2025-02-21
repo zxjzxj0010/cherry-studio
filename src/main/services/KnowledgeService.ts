@@ -93,9 +93,9 @@ class KnowledgeService {
     if (item.type === 'directory') {
       const directory = item.content as string
       const directoryId = `DirectoryLoader_${uuidv4()}`
-      console.log('[KnowledgeService]', directoryId)
       // 先添加目录本身
       const dirMtime = fs.statSync(directory).mtime
+      console.log('[KnowledgeService] add directory', directoryId)
       knowledgeWatchService.addFile(item.type, directory, directoryId, dirMtime.toISOString())
       const files = getAllFiles(directory)
       const totalFiles = files.length
