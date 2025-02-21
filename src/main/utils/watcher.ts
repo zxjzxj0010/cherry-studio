@@ -7,7 +7,7 @@ export type WatchItem = {
   type: 'directory' | 'file'
   uniqueId: string
   path: string
-  hash: string
+  mtime: string
   children?: WatchItem[]
 }
 

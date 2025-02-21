@@ -12,7 +12,6 @@ import { getInstanceName } from '@main/utils'
 import { getAllFiles } from '@main/utils/file'
 import type { LoaderReturn } from '@shared/config/types'
 import { FileType, KnowledgeBaseParams, KnowledgeItem } from '@types'
-import * as crypto from 'crypto'
 import { app } from 'electron'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -95,18 +94,17 @@ class KnowledgeService {
       const directory = item.content as string
       const directoryId = `DirectoryLoader_${uuidv4()}`
       // 先添加目录本身
-      const dirHash = crypto.createHash('sha256').update(directory).digest('hex')
-      knowledgeWatchService.addFile(item.type, directory, directoryId, dirHash)
+      const dirMtime = fs.statSync(directory).mtime
+      knowledgeWatchService.addFile(item.type, directory, directoryId, dirMtime.toISOString())
       const files = getAllFiles(directory)
       const totalFiles = files.length
       let processedFiles = 0
       const promises = files.map(async (file) => {
-        const fileContent = fs.readFileSync(file.path, 'utf-8')
-        const fileHash = crypto.createHash('sha256').update(fileContent).digest('hex')
+        const fileMtime = fs.statSync(file.path).mtime
         const result = await addFileLoader(ragApplication, file, base, forceReload)
         const uniqueId = result.uniqueId || path.basename(file.path)
 
-        knowledgeWatchService.addFile('file', file.path, uniqueId, fileHash, directoryId)
+        knowledgeWatchService.addFile('file', file.path, uniqueId, fileMtime.toISOString(), directoryId)
 
         processedFiles++
 
@@ -171,10 +169,9 @@ class KnowledgeService {
 
     if (item.type === 'file') {
       const file = item.content as FileType
-      const fileContent = fs.readFileSync(file.path, 'utf-8')
-      const fileHash = crypto.createHash('sha256').update(fileContent).digest('hex')
+      const fileMtime = fs.statSync(file.path).mtime
       const result = await addFileLoader(ragApplication, file, base, forceReload)
-      knowledgeWatchService.addFile(item.type, file.path, result.uniqueId, fileHash)
+      knowledgeWatchService.addFile(item.type, file.path, result.uniqueId, fileMtime.toISOString())
       return result
     }
 

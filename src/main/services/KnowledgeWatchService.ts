@@ -2,28 +2,28 @@ import * as fs from 'node:fs'
 
 import { WatchItem } from '@main/utils/watcher'
 import chokidar, { FSWatcher } from 'chokidar'
-import * as crypto from 'crypto'
 
 import { windowService } from './WindowService'
 
+export interface FileInfo {
+  fileType: 'file' | 'directory'
+  uniqueId: string
+  mtime: string
+  parentId?: string
+  children?: string[]
+}
+
+export interface WatcherEvents {
+  'file-changed': (uniqueId: string) => void
+  'directory-content-changed': (uniqueId: string) => void
+  'file-removed': (uniqueId: string) => void
+}
+
 class KnowledgeWatchService {
   private static instance: KnowledgeWatchService
-  private knowledgeWatcher: FSWatcher
-
-  // 用于app关闭时保存watcher / app开启时加载watcher
-  private fileMap: Map<
-    string,
-    {
-      fileType: string
-      uniqueId: string
-      hash: string
-      parentId?: string
-      children?: string[]
-    }
-  > = new Map()
-
-  // 用于app打开时比较文件是否更改
-  private originalHashMap = new Map<string, string>()
+  private readonly knowledgeWatcher: FSWatcher
+  private readonly fileMap = new Map<string, FileInfo>()
+  private readonly originalMtimeMap = new Map<string, string>()
 
   private constructor() {
     this.knowledgeWatcher = chokidar.watch([], {
@@ -38,87 +38,6 @@ class KnowledgeWatchService {
     this.setupWatcherEvents()
   }
 
-  private setupWatcherEvents() {
-    this.knowledgeWatcher
-      .on('add', (filePath) => {
-        console.log(`File ${filePath} has been added`)
-        this.handleFileChange(filePath)
-      })
-      .on('change', (filePath) => {
-        console.log(`File ${filePath} has been changed`)
-        this.handleFileChange(filePath)
-      })
-      .on('unlink', (filePath) => {
-        const fileInfo = this.fileMap.get(filePath)
-        if (fileInfo && fileInfo.parentId) {
-          const parentInfo = Array.from(this.fileMap.entries()).find(([, info]) => info.uniqueId === fileInfo.parentId)
-          if (parentInfo) {
-            const [parentPath, parentData] = parentInfo
-            parentData.children = parentData.children?.filter((id) => id !== fileInfo.uniqueId)
-            this.fileMap.set(parentPath, parentData)
-          }
-        }
-        this.fileMap.delete(filePath)
-      })
-      .on('unlinkDir', (dirPath) => {
-        const dirInfo = this.fileMap.get(dirPath)
-        if (!dirInfo) return
-
-        // 递归删除所有子文件/目录的记录
-        const deleteChildren = (parentPath: string) => {
-          const parentInfo = this.fileMap.get(parentPath)
-          if (!parentInfo?.children) return
-
-          for (const childId of parentInfo.children) {
-            const childEntry = Array.from(this.fileMap.entries()).find(([, info]) => info.uniqueId === childId)
-            if (childEntry) {
-              const [childPath, childInfo] = childEntry
-              if (childInfo.children) {
-                deleteChildren(childPath)
-              }
-              this.fileMap.delete(childPath)
-            }
-          }
-        }
-
-        // 删除该目录的所有子项
-        deleteChildren(dirPath)
-
-        // 更新父目录的 children 信息
-        if (dirInfo.parentId) {
-          const parentInfo = Array.from(this.fileMap.entries()).find(([, info]) => info.uniqueId === dirInfo.parentId)
-          if (parentInfo) {
-            const [parentPath, parentData] = parentInfo
-            parentData.children = parentData.children?.filter((id) => id !== dirInfo.uniqueId)
-            this.fileMap.set(parentPath, parentData)
-          }
-        }
-
-        // 删除目录本身的记录
-        this.fileMap.delete(dirPath)
-      })
-  }
-  private async handleFileChange(filePath: string) {
-    const mainWindow = windowService.getMainWindow()
-    const fileInfo = this.fileMap.get(filePath)
-
-    if (!fileInfo || !mainWindow) return
-
-    const fileContent = await fs.promises.readFile(filePath, 'utf-8')
-    const currentHash = crypto.createHash('sha256').update(fileContent).digest('hex')
-
-    if (fileInfo.hash !== currentHash) {
-      fileInfo.hash = currentHash
-      this.fileMap.set(filePath, fileInfo)
-      mainWindow.webContents.send('file-changed', fileInfo.uniqueId)
-
-      // 如果是文件夹内的文件变化，也通知文件夹的变化
-      if (fileInfo.parentId) {
-        mainWindow.webContents.send('directory-content-changed', fileInfo.parentId)
-      }
-    }
-  }
-
   public static getInstance(): KnowledgeWatchService {
     if (!KnowledgeWatchService.instance) {
       KnowledgeWatchService.instance = new KnowledgeWatchService()
@@ -126,158 +45,310 @@ class KnowledgeWatchService {
     return KnowledgeWatchService.instance
   }
 
-  public addFile(fileType: string, filePath: string, uniqueId: string, hash: string, parentId?: string): void {
-    this.knowledgeWatcher.add(filePath)
-    this.fileMap.set(filePath, {
-      fileType,
-      uniqueId,
-      hash,
-      parentId,
-      children: fileType === 'directory' ? [] : undefined
-    })
-    console.log(`Watching ${filePath}`)
+  private setupWatcherEvents(): void {
+    this.knowledgeWatcher
+      .on('add', (path) => {
+        this.handleFileChange(path)
+      })
+      .on('change', (path) => this.handleFileChange(path))
+      .on('unlink', (path) => this.handleFileRemoval(path))
+      .on('unlinkDir', (path) => this.handleDirectoryRemoval(path))
+  }
 
-    if (parentId) {
-      const parentEntry = Array.from(this.fileMap.entries()).find(([, info]) => info.uniqueId === parentId)
-      if (parentEntry) {
-        const [parentPath, parentInfo] = parentEntry
-        parentInfo.children = [...(parentInfo.children || []), uniqueId]
-        this.fileMap.set(parentPath, parentInfo)
+  private async handleFileChange(filePath: string): Promise<void> {
+    try {
+      const mainWindow = windowService.getMainWindow()
+      const fileInfo = this.fileMap.get(filePath)
+
+      if (!fileInfo || !mainWindow) return
+
+      // get file update time
+      const currentMtime = fs.statSync(filePath).mtime
+
+      if (fileInfo.mtime !== currentMtime.toISOString()) {
+        this.updateFileInfo(filePath, { ...fileInfo, mtime: currentMtime.toISOString() })
+        this.notifyFileChange(fileInfo)
       }
+    } catch (error) {
+      console.debug('[KnowledgeWatchService] Error handling file change:', error)
     }
   }
 
-  public removeFile(uniqueId: string) {
-    const filePath = this.fileMap.entries().find(([, info]) => info.uniqueId === uniqueId)?.[0]
-    if (!filePath) return
+  private handleFileRemoval(filePath: string): void {
+    try {
+      const fileInfo = this.fileMap.get(filePath)
+      if (!fileInfo) return
 
-    const fileInfo = this.fileMap.get(filePath)
-    if (fileInfo?.fileType === 'directory') {
-      const unwatchChildren = (parentPath: string) => {
-        const parentInfo = this.fileMap.get(parentPath)
-        if (!parentInfo?.children) return
+      this.updateParentOnRemoval(fileInfo)
+      this.fileMap.delete(filePath)
+      this.notifyFileRemoval(fileInfo.uniqueId)
+    } catch (error) {
+      console.debug('[KnowledgeWatchService] Error handling file removal:', error)
+    }
+  }
 
-        for (const childId of parentInfo.children) {
-          const childEntry = Array.from(this.fileMap.entries()).find(([, info]) => info.uniqueId === childId)
-          if (childEntry) {
-            const [childPath, childInfo] = childEntry
-            if (childInfo.fileType === 'directory') {
-              unwatchChildren(childPath)
-            }
-            this.knowledgeWatcher.unwatch(childPath)
-            this.fileMap.delete(childPath)
-            console.log(`Unwatching ${childPath}`)
+  private handleDirectoryRemoval(dirPath: string): void {
+    try {
+      const dirInfo = this.fileMap.get(dirPath)
+      if (!dirInfo) return
+
+      this.recursivelyRemoveChildren(dirPath)
+      this.updateParentOnRemoval(dirInfo)
+      this.fileMap.delete(dirPath)
+    } catch (error) {
+      console.debug('[KnowledgeWatchService] Error handling directory removal:', error)
+    }
+  }
+
+  public addFile(fileType: string, filePath: string, uniqueId: string, mtime: string, parentId?: string): void {
+    try {
+      this.knowledgeWatcher.add(filePath)
+
+      const fileInfo: FileInfo = {
+        fileType: fileType as 'file' | 'directory',
+        uniqueId,
+        mtime,
+        parentId,
+        children: fileType === 'directory' ? [] : undefined
+      }
+
+      this.fileMap.set(filePath, fileInfo)
+      this.updateParentOnAdd(parentId, uniqueId)
+
+      console.log(`Added watch for ${filePath}`)
+    } catch (error) {
+      console.debug('[KnowledgeWatchService] Error adding file:', error)
+    }
+  }
+
+  public removeFile(uniqueId: string): void {
+    try {
+      const filePath = this.findPathByUniqueId(uniqueId)
+      if (!filePath) return
+
+      const fileInfo = this.fileMap.get(filePath)
+      if (fileInfo?.fileType === 'directory') {
+        this.recursivelyRemoveChildren(filePath)
+      }
+
+      this.knowledgeWatcher.unwatch(filePath)
+      this.fileMap.delete(filePath)
+    } catch (error) {
+      console.debug('[KnowledgeWatchService] Error removing file:', error)
+    }
+  }
+  private updateFileInfo(filePath: string, fileInfo: FileInfo): void {
+    try {
+      this.fileMap.set(filePath, fileInfo)
+      // 只在首次添加文件时设置 originalMtime
+      if (!this.originalMtimeMap.has(filePath)) {
+        this.originalMtimeMap.set(filePath, fileInfo.mtime)
+        return
+      }
+      const originalMtime = this.originalMtimeMap.get(filePath)
+
+      if (originalMtime !== fileInfo.mtime) {
+        // 通知文件变更
+        const mainWindow = windowService.getMainWindow()
+        if (mainWindow) {
+          // 发送文件变更通知
+          this.notifyFileChange(fileInfo)
+
+          // 如果文件在目录中，同时通知目录内容变更
+          if (fileInfo.parentId) {
+            const mainWindow = windowService.getMainWindow()
+            if (!mainWindow) return
+            mainWindow.webContents.send('directory-content-changed', fileInfo.parentId)
           }
         }
       }
-      unwatchChildren(filePath)
+    } catch (error) {
+      console.debug('[KnowledgeWatchService] Error updating file info:', error)
     }
-
-    this.knowledgeWatcher.unwatch(filePath)
-    this.fileMap.delete(filePath)
-    console.log(`Unwatching ${filePath}`)
   }
 
+  private updateParentOnAdd(parentId: string | undefined, childId: string): void {
+    if (!parentId) return
+
+    const parentEntry = this.findEntryByUniqueId(parentId)
+    if (parentEntry) {
+      const [parentPath, parentInfo] = parentEntry
+      parentInfo.children = [...(parentInfo.children || []), childId]
+      this.fileMap.set(parentPath, parentInfo)
+    }
+  }
+
+  private updateParentOnRemoval(fileInfo: FileInfo): void {
+    if (!fileInfo.parentId) return
+
+    const parentEntry = this.findEntryByUniqueId(fileInfo.parentId)
+    if (parentEntry) {
+      const [parentPath, parentInfo] = parentEntry
+      parentInfo.children = parentInfo.children?.filter((id) => id !== fileInfo.uniqueId)
+      this.fileMap.set(parentPath, parentInfo)
+    }
+  }
+
+  private findEntryByUniqueId(uniqueId: string): [string, FileInfo] | undefined {
+    return Array.from(this.fileMap.entries()).find(([, info]) => info.uniqueId === uniqueId)
+  }
+
+  private findPathByUniqueId(uniqueId: string): string | undefined {
+    return this.findEntryByUniqueId(uniqueId)?.[0]
+  }
+
+  private recursivelyRemoveChildren(parentPath: string): void {
+    const parentInfo = this.fileMap.get(parentPath)
+    if (!parentInfo?.children) return
+
+    for (const childId of parentInfo.children) {
+      const childEntry = this.findEntryByUniqueId(childId)
+      if (childEntry) {
+        const [childPath, childInfo] = childEntry
+        if (childInfo.fileType === 'directory') {
+          this.recursivelyRemoveChildren(childPath)
+        }
+        this.knowledgeWatcher.unwatch(childPath)
+        this.fileMap.delete(childPath)
+      }
+    }
+  }
+
+  private notifyFileChange(fileInfo: FileInfo): void {
+    const mainWindow = windowService.getMainWindow()
+    if (!mainWindow) return
+
+    mainWindow.webContents.send('file-changed', fileInfo.uniqueId)
+    if (fileInfo.parentId) {
+      mainWindow.webContents.send('directory-content-changed', fileInfo.parentId)
+    }
+  }
+
+  private notifyFileRemoval(uniqueId: string): void {
+    const mainWindow = windowService.getMainWindow()
+    if (!mainWindow) return
+
+    mainWindow.webContents.send('file-removed', uniqueId)
+  }
   public loadWatchItems(items: WatchItem[]): void {
+    // 在加载之前清空 Map
+    this.fileMap.clear()
+    this.originalMtimeMap.clear()
     const loadItem = (item: WatchItem, parentId?: string) => {
-      this.knowledgeWatcher.add(item.path)
-      this.originalHashMap.set(item.path, item.hash)
+      try {
+        this.knowledgeWatcher.add(item.path)
+        this.originalMtimeMap.set(item.path, item.mtime)
 
-      this.fileMap.set(item.path, {
-        fileType: item.type,
-        uniqueId: item.uniqueId,
-        hash: item.hash,
-        parentId,
-        children: item.type === 'directory' ? item.children?.map((child) => child.uniqueId) : undefined
-      })
+        this.fileMap.set(item.path, {
+          fileType: item.type,
+          uniqueId: item.uniqueId,
+          mtime: item.mtime,
+          parentId,
+          children: item.type === 'directory' ? item.children?.map((child) => child.uniqueId) : undefined
+        })
 
-      if (item.children) {
-        item.children.forEach((child) => loadItem(child, item.uniqueId))
+        // 递归加载子项
+        if (item.children) {
+          item.children.forEach((child) => loadItem(child, item.uniqueId))
+        }
+      } catch (error) {
+        console
       }
     }
 
     items.forEach((item) => loadItem(item))
+    console.log('load watch item', this.originalMtimeMap)
+  }
+
+  public getWatchItems(): WatchItem[] {
+    try {
+      const buildWatchItem = (filePath: string): WatchItem | null => {
+        const fileInfo = this.fileMap.get(filePath)
+        if (!fileInfo) return null
+
+        const watchItem: WatchItem = {
+          type: fileInfo.fileType,
+          uniqueId: fileInfo.uniqueId,
+          path: filePath,
+          mtime: fileInfo.mtime
+        }
+
+        // 构建子项
+        if (fileInfo.children && fileInfo.children.length > 0) {
+          watchItem.children = fileInfo.children
+            .map((childId) => {
+              const childEntry = this.findEntryByUniqueId(childId)
+              return childEntry ? buildWatchItem(childEntry[0]) : null
+            })
+            .filter((child): child is WatchItem => child !== null)
+        }
+
+        return watchItem
+      }
+
+      // 只返回根级别的项目
+      const rootItems = Array.from(this.fileMap.entries())
+        .filter(([, info]) => !info.parentId)
+        .map(([filePath]) => buildWatchItem(filePath))
+        .filter((item): item is WatchItem => item !== null)
+
+      return rootItems
+    } catch (error) {
+      console.debug('[KnowledgeWatchService] Error getting watch items:', error)
+      return []
+    }
   }
 
   public async checkAllFiles(): Promise<void> {
     const mainWindow = windowService.getMainWindow()
     if (!mainWindow) {
-      console.log('No main window')
+      console.log('No main window found for file checking')
       return
     }
 
+    console.log('Starting file check process...')
+    console.log('check all files', this.originalMtimeMap)
+
     for (const [filePath, fileInfo] of this.fileMap.entries()) {
       try {
-        if (!fs.existsSync(filePath)) {
-          this.fileMap.delete(filePath)
-          this.originalHashMap.delete(filePath)
-          console.log(`File ${filePath} has been removed`)
-          mainWindow.webContents.send('file-removed', fileInfo.uniqueId)
-          continue
-        }
-
-        const stats = await fs.promises.stat(filePath)
-        if (!stats.isFile()) {
-          continue
-        }
-
-        const fileContent = await fs.promises.readFile(filePath, 'utf-8')
-        const currentHash = crypto.createHash('sha256').update(fileContent).digest('hex')
-        const originalHash = this.originalHashMap.get(filePath)
-
-        if (originalHash !== currentHash) {
-          // 更新文件Map中的哈希值
-          fileInfo.hash = currentHash
-          this.fileMap.set(filePath, fileInfo)
-
-          console.warn(`File ${filePath} has changed from initial state`)
-          mainWindow.webContents.send('file-changed', fileInfo.uniqueId)
-
-          if (fileInfo.parentId) {
-            console.warn(`Directory ${fileInfo.parentId} content changed`)
-            mainWindow.webContents.send('directory-content-changed', fileInfo.parentId)
-          }
-        }
+        await this.checkSingleFile(filePath, fileInfo, mainWindow)
       } catch (error) {
-        console.error(`Error checking file ${filePath}:`, error)
+        console.debug('[KnowledgeWatchService] Error checking file:', error)
       }
     }
-    this.clearOriginalHashes()
+
+    this.originalMtimeMap.clear()
+    console.log('File check process completed')
   }
 
-  // 在所有检查完成后，可以选择是否清理originalHashMap
-  private clearOriginalHashes(): void {
-    this.originalHashMap.clear()
-  }
-
-  public getWatchItems(): WatchItem[] {
-    console.log('Getting watch items:', this.fileMap)
-    const buildWatchItem = (filePath: string): WatchItem => {
-      const fileInfo = this.fileMap.get(filePath)!
-      const watchItem: WatchItem = {
-        type: fileInfo.fileType as 'directory' | 'file',
-        uniqueId: fileInfo.uniqueId,
-        path: filePath,
-        hash: fileInfo.hash
-      }
-
-      if (fileInfo.children && fileInfo.children.length > 0) {
-        watchItem.children = fileInfo.children
-          .map((childId) => {
-            const childEntry = Array.from(this.fileMap.entries()).find(([, info]) => info.uniqueId === childId)
-            return childEntry ? buildWatchItem(childEntry[0]) : null
-          })
-          .filter((child): child is WatchItem => child !== null)
-      }
-
-      return watchItem
+  private async checkSingleFile(
+    filePath: string,
+    fileInfo: FileInfo,
+    mainWindow: Electron.BrowserWindow
+  ): Promise<void> {
+    // 检查文件是否存在
+    if (!fs.existsSync(filePath)) {
+      this.fileMap.delete(filePath)
+      this.originalMtimeMap.delete(filePath)
+      console.log(`File removed: ${filePath}`)
+      mainWindow.webContents.send('file-removed', fileInfo.uniqueId)
+      return
     }
+    console.log(`Checking file: ${filePath}`)
 
-    const rootItems = Array.from(this.fileMap.entries())
-      .filter(([, info]) => !info.parentId)
-      .map(([filePath]) => buildWatchItem(filePath))
+    // 检查文件类型
+    const stats = await fs.promises.stat(filePath)
+    if (!stats.isFile()) return
 
-    return rootItems
+    const currentMtime = stats.mtime
+    // 检查文件内容变化
+    const originalMtime = this.originalMtimeMap.get(filePath)
+    console.log('Original mtime:', originalMtime, 'current mtime:', currentMtime.toISOString())
+
+    if (originalMtime !== currentMtime.toISOString() && originalMtime !== undefined) {
+      console.log(`File changed: ${filePath}`)
+      await this.handleFileChange(filePath)
+    }
   }
 }
 
