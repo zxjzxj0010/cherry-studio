@@ -21,7 +21,6 @@ if (!app.requestSingleInstanceLock()) {
 
   app.whenReady().then(async () => {
     await updateUserDataPath()
-    await loadWatcher()
 
     // Register custom protocol
     if (!app.isDefaultProtocolClient('cherrystudio')) {
@@ -62,8 +61,7 @@ if (!app.requestSingleInstanceLock()) {
 
     // 等待窗口加载完成后再检查文件
     mainWindow.webContents.on('did-finish-load', async () => {
-      console.log('Window did-finish-load')
-
+      await loadWatcher()
       await knowledgeWatchService.checkAllFiles()
     })
     if (process.env.NODE_ENV === 'development') {

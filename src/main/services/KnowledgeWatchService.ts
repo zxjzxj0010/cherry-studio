@@ -219,6 +219,7 @@ class KnowledgeWatchService {
     if (!mainWindow) return
 
     mainWindow.webContents.send('file-changed', fileInfo.uniqueId)
+    console.log('file changed', fileInfo.uniqueId)
     if (fileInfo.parentId) {
       mainWindow.webContents.send('directory-content-changed', fileInfo.parentId)
     }
@@ -252,12 +253,11 @@ class KnowledgeWatchService {
           item.children.forEach((child) => loadItem(child, item.uniqueId))
         }
       } catch (error) {
-        console
+        console.debug('[KnowledgeWatchService] Error loading watch item:', error)
       }
     }
 
     items.forEach((item) => loadItem(item))
-    console.log('load watch item', this.originalMtimeMap)
   }
 
   public getWatchItems(): WatchItem[] {
@@ -306,9 +306,6 @@ class KnowledgeWatchService {
       return
     }
 
-    console.log('Starting file check process...')
-    console.log('check all files', this.originalMtimeMap)
-
     for (const [filePath, fileInfo] of this.fileMap.entries()) {
       try {
         await this.checkSingleFile(filePath, fileInfo, mainWindow)
@@ -318,7 +315,6 @@ class KnowledgeWatchService {
     }
 
     this.originalMtimeMap.clear()
-    console.log('File check process completed')
   }
 
   private async checkSingleFile(
@@ -334,7 +330,6 @@ class KnowledgeWatchService {
       mainWindow.webContents.send('file-removed', fileInfo.uniqueId)
       return
     }
-    console.log(`Checking file: ${filePath}`)
 
     // 检查文件类型
     const stats = await fs.promises.stat(filePath)
@@ -343,7 +338,6 @@ class KnowledgeWatchService {
     const currentMtime = stats.mtime
     // 检查文件内容变化
     const originalMtime = this.originalMtimeMap.get(filePath)
-    console.log('Original mtime:', originalMtime, 'current mtime:', currentMtime.toISOString())
 
     if (originalMtime !== currentMtime.toISOString() && originalMtime !== undefined) {
       console.log(`File changed: ${filePath}`)
