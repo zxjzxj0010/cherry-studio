@@ -8,7 +8,6 @@ import { registerShortcuts } from './services/ShortcutService'
 import { TrayService } from './services/TrayService'
 import { windowService } from './services/WindowService'
 import { updateUserDataPath } from './utils/upgrade'
-import { loadWatcher, saveWatcher } from './utils/watcher'
 
 // Check for single instance lock
 if (!app.requestSingleInstanceLock()) {
@@ -48,7 +47,7 @@ if (!app.requestSingleInstanceLock()) {
     new TrayService()
     // 监听隐藏事件
     mainWindow.on('hide', async () => {
-      await saveWatcher()
+      await knowledgeWatchService.stop()
     })
 
     app.on('activate', async function () {
@@ -58,8 +57,7 @@ if (!app.requestSingleInstanceLock()) {
       } else {
         windowService.showMainWindow()
       }
-      await loadWatcher()
-      await knowledgeWatchService.checkAllFiles()
+      await knowledgeWatchService.check()
     })
     registerShortcuts(mainWindow)
 
@@ -67,8 +65,7 @@ if (!app.requestSingleInstanceLock()) {
 
     // 等待窗口加载完成后再检查文件
     mainWindow.webContents.on('did-finish-load', async () => {
-      await loadWatcher()
-      await knowledgeWatchService.checkAllFiles()
+      await knowledgeWatchService.check()
     })
     if (process.env.NODE_ENV === 'development') {
       installExtension(REDUX_DEVTOOLS)
@@ -88,7 +85,7 @@ if (!app.requestSingleInstanceLock()) {
 
   app.on('before-quit', async () => {
     app.isQuitting = true
-    await saveWatcher()
+    await knowledgeWatchService.stop()
   })
 
   // In this file you can include the rest of your app"s specific main process
