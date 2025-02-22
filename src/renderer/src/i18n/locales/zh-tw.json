@@ -304,7 +304,8 @@
       "threshold_placeholder": "未設置",
       "threshold_too_large_or_small": "閾值不能大於1或小於0",
       "no_match": "未匹配到知識庫內容",
-      "threshold": "匹配度閾值"
+      "threshold": "匹配度閾值",
+      "file_or_directory_changed": "檢測到知識庫檔案/資料夾修改"
     },
     "languages": {
       "arabic": "阿拉伯文",

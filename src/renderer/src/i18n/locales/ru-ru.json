@@ -304,7 +304,8 @@
       "threshold_placeholder": "Не установлено",
       "threshold_too_large_or_small": "Порог не может быть больше 1 или меньше 0",
       "no_match": "Не найдено содержимого в базе знаний.",
-      "threshold": "Порог соответствия"
+      "threshold": "Порог соответствия",
+      "file_or_directory_changed": "Обнаружены изменения в файловом или папочном хранилище базы знаний."
     },
     "languages": {
       "arabic": "Арабский",
@@ -585,11 +586,7 @@
           "host": "Хост WebDAV",
           "host.placeholder": "http://localhost:8080",
           "minute_interval_one": "{{count}} минута",
-          "minute_interval_few": "{{count}} минуты",
-          "minute_interval_many": "{{count}} минут",
           "hour_interval_one": "{{count}} час",
-          "hour_interval_few": "{{count}} часа",
-          "hour_interval_many": "{{count}} часов",
           "lastSync": "Последняя синхронизация",
           "noSync": "Ожидание следующего резервного копирования",
           "password": "Пароль WebDAV",
@@ -601,8 +598,14 @@
           "syncError": "Ошибка резервного копирования",
           "syncStatus": "Статус резервного копирования",
           "title": "WebDAV",
-          "user": "Пользователь WebDAV"
-        }
+          "user": "Пользователь WebDAV",
+          "minute_interval_other": "{{count}} минут",
+          "hour_interval_other": "{{count}} часов"
+        },
+        "minute_interval_one": "{{count}} минут",
+        "minute_interval_other": "{{count}} минут",
+        "hour_interval_one": "{{count}} часов",
+        "hour_interval_other": "{{count}} часов"
       },
       "display.custom.css": "Пользовательский CSS",
       "display.custom.css.placeholder": "/* Здесь введите пользовательский CSS */",

@@ -4,6 +4,7 @@ import {
   FileTextOutlined,
   FolderOutlined,
   GlobalOutlined,
+  InfoCircleOutlined,
   LinkOutlined,
   PlusOutlined,
   RedoOutlined,
@@ -88,6 +89,13 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
         case 'file-changed':
           if (item) {
             console.log('[KnowledgeContent] Refreshing item:', item)
+            window.message.info({
+              content: t('knowledge.file_or_directory_changed'),
+              duration: 4,
+              icon: <InfoCircleOutlined />,
+              key: 'knowledge-file-directory-changed-info'
+            })
+
             refreshItem(item)
           }
           break

@@ -304,7 +304,8 @@
       "threshold_placeholder": "Not set",
       "threshold_too_large_or_small": "Threshold cannot be greater than 1 or less than 0",
       "no_match": "No matching content found in the knowledge base.",
-      "threshold": "Matching threshold"
+      "threshold": "Matching threshold",
+      "file_or_directory_changed": "Detected modifications to knowledge base files/folders."
     },
     "languages": {
       "arabic": "Arabic",
@@ -600,7 +601,11 @@
           "syncStatus": "Backup Status",
           "title": "WebDAV",
           "user": "WebDAV User"
-        }
+        },
+        "minute_interval_one": "{{count}} minutes",
+        "minute_interval_other": "{{count}} minutes",
+        "hour_interval_one": "{{count}} hours",
+        "hour_interval_other": "{{count}} hours"
       },
       "display.custom.css": "Custom CSS",
       "display.custom.css.placeholder": "/* Put custom CSS here */",
