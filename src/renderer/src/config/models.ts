@@ -164,8 +164,7 @@ export const VISION_REGEX = new RegExp(
 export const TEXT_TO_IMAGE_REGEX = /flux|diffusion|stabilityai|sd-|dall|cogview|janus/i
 export const REASONING_REGEX = /^(o\d+(?:-[\w-]+)?|.*\b(?:reasoner|thinking)\b.*|.*-[rR]\d+.*)$/i
 
-export const EMBEDDING_REGEX =
-  /(?:^text-|embed|rerank|davinci|babbage|bge-|e5-|LLM2Vec|retrieval|uae-|gte-|jina-clip|jina-embeddings)/i
+export const EMBEDDING_REGEX = /(?:^text-|embed|bge-|e5-|LLM2Vec|retrieval|uae-|gte-|jina-clip|jina-embeddings)/i
 export const NOT_SUPPORTED_REGEX = /(?:^tts|rerank|whisper|speech)/i
 
 export function getModelLogo(modelId: string) {
@@ -196,8 +195,8 @@ export function getModelLogo(modelId: string) {
     glm: isLight ? ChatGLMModelLogo : ChatGLMModelLogoDark,
     deepseek: isLight ? DeepSeekModelLogo : DeepSeekModelLogoDark,
     qwen: isLight ? QwenModelLogo : QwenModelLogoDark,
-    "qwq-": isLight ? QwenModelLogo : QwenModelLogoDark,
-    "qvq-": isLight ? QwenModelLogo : QwenModelLogoDark,
+    'qwq-': isLight ? QwenModelLogo : QwenModelLogoDark,
+    'qvq-': isLight ? QwenModelLogo : QwenModelLogoDark,
     Omni: isLight ? QwenModelLogo : QwenModelLogoDark,
     gemma: isLight ? GemmaModelLogo : GemmaModelLogoDark,
     'yi-': isLight ? YiModelLogo : YiModelLogoDark,
@@ -1604,6 +1603,10 @@ export function isEmbeddingModel(model: Model): boolean {
     return false
   }
 
+  if (model.provider === 'doubao') {
+    return EMBEDDING_REGEX.test(model.name)
+  }
+
   return EMBEDDING_REGEX.test(model.id) || model.type?.includes('embedding') || false
 }
 
@@ -1612,12 +1615,20 @@ export function isVisionModel(model: Model): boolean {
     return false
   }
 
+  if (model.provider === 'doubao') {
+    return VISION_REGEX.test(model.name) || model.type?.includes('vision') || false
+  }
+
   return VISION_REGEX.test(model.id) || model.type?.includes('vision') || false
 }
 
 export function isReasoningModel(model: Model): boolean {
   if (!model) {
     return false
+  }
+
+  if (model.provider === 'doubao') {
+    return REASONING_REGEX.test(model.name) || model.type?.includes('reasoning') || false
   }
 
   return REASONING_REGEX.test(model.id) || model.type?.includes('reasoning') || false
