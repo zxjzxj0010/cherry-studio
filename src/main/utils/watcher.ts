@@ -34,7 +34,7 @@ export async function initWatcher(): Promise<KnowledgeWatchList | null> {
 export async function loadWatcher(): Promise<void> {
   const knowledgeWatchList = await initWatcher()
   if (!knowledgeWatchList || !knowledgeWatchList.watchItems) return
-  console.log('Loading watcher:', knowledgeWatchList.watchItems)
+  console.log('1. [watcher] initWatcher', knowledgeWatchList)
   knowledgeWatchService.loadWatchItems(knowledgeWatchList.watchItems)
 }
 

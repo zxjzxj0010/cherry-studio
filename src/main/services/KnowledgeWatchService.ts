@@ -57,13 +57,18 @@ class KnowledgeWatchService {
     try {
       const mainWindow = windowService.getMainWindow()
       const fileInfo = this.fileMap.get(filePath)
+      console.log('[KnowledgeWatchService] handleFileChange', this.fileMap)
 
       if (!fileInfo || !mainWindow) return
 
-      const currentMtime = fs.statSync(filePath).mtime
+      const currentMtime = fs.statSync(filePath).mtime.toISOString()
 
-      if (fileInfo.mtime !== currentMtime.toISOString()) {
-        this.updateFileInfo(filePath, { ...fileInfo, mtime: currentMtime.toISOString() })
+      if (fileInfo.mtime !== currentMtime) {
+        console.warn('[KnowledgeWatchService] File changed:', filePath)
+        this.updateFileInfo(filePath, { ...fileInfo, mtime: currentMtime })
+      }
+      if (!this.originalMtimeMap.has(filePath)) {
+        this.originalMtimeMap.set(filePath, currentMtime)
       }
     } catch (error) {
       console.debug('[KnowledgeWatchService] Error handling file change:', error)
@@ -91,6 +96,9 @@ class KnowledgeWatchService {
       this.recursivelyRemoveChildren(dirPath)
       this.updateParentOnRemoval(dirInfo)
       this.fileMap.delete(dirPath)
+      this.originalMtimeMap.delete(dirPath)
+      console.log('6. [KnowledgeWatchService] recursivelyRemoveChildren', this.originalMtimeMap, this.fileMap)
+
       this.notifyDirectoryRemoval(dirInfo)
     } catch (error) {
       console.debug('[KnowledgeWatchService] Error handling directory removal:', error)
@@ -142,6 +150,7 @@ class KnowledgeWatchService {
     try {
       this.fileMap.set(filePath, fileInfo)
       if (!this.originalMtimeMap.has(filePath)) {
+        console.log('[KnowledgeWatchService] no original mtime for', this.originalMtimeMap)
         this.originalMtimeMap.set(filePath, fileInfo.mtime)
         return
       }
@@ -149,14 +158,14 @@ class KnowledgeWatchService {
 
       if (originalMtime !== fileInfo.mtime) {
         const mainWindow = windowService.getMainWindow()
+        if (!mainWindow) return
         if (mainWindow) {
-          this.notifyFileChange(fileInfo)
-
           if (fileInfo.parentId) {
-            const mainWindow = windowService.getMainWindow()
-            if (!mainWindow) return
             mainWindow.webContents.send('directory-content-changed', fileInfo.parentId)
+            return
           }
+          this.notifyFileChange(fileInfo)
+          console.warn('[KnowledgeWatchService] notifyFileChange:', fileInfo.mtime, originalMtime)
         }
       }
     } catch (error) {
@@ -266,6 +275,7 @@ class KnowledgeWatchService {
     }
 
     items.forEach((item) => loadItem(item))
+    console.log('2. [KnowledgeWatchService] Loaded watch items:', this.fileMap)
   }
 
   public getWatchItems(): WatchItem[] {
@@ -308,12 +318,11 @@ class KnowledgeWatchService {
   }
 
   public async checkAllFiles(): Promise<void> {
+    console.warn('3. [KnowledgeWatchService] Checking all files...')
     const mainWindow = windowService.getMainWindow()
     if (!mainWindow) {
       return
     }
-    console.log('check all files', this.originalMtimeMap)
-
     for (const [filePath, fileInfo] of this.fileMap.entries()) {
       try {
         await this.checkPath(filePath, fileInfo, mainWindow)
@@ -322,13 +331,17 @@ class KnowledgeWatchService {
       }
     }
 
-    this.originalMtimeMap.clear()
+    for (const [filePath, fileInfo] of this.fileMap.entries()) {
+      this.originalMtimeMap.set(filePath, fileInfo.mtime)
+    }
+    console.log('4. [KnowledgeWatchService] checkAllFiles originalMtimeMap', this.originalMtimeMap)
   }
 
   private async checkPath(path: string, fileInfo: FileInfo, mainWindow: Electron.BrowserWindow): Promise<void> {
     if (!fs.existsSync(path)) {
       this.fileMap.delete(path)
       this.originalMtimeMap.delete(path)
+      console.log('5. [KnowledgeWatchService] Check Path:', path)
       if (fileInfo.fileType === 'directory') {
         mainWindow.webContents.send('directory-removed', fileInfo.uniqueId)
       } else if (fileInfo.fileType === 'file') {
@@ -348,8 +361,8 @@ class KnowledgeWatchService {
   private async checkFileChanges(filePath: string, stats: fs.Stats): Promise<void> {
     const currentMtime = stats.mtime.toISOString()
     const originalMtime = this.originalMtimeMap.get(filePath)
-    console.log('check file changes', originalMtime, currentMtime)
     if (originalMtime && originalMtime !== currentMtime) {
+      console.log('5. [KnowledgeWatchService] checkFileChanges File changed:', filePath)
       await this.handleFileChange(filePath)
     }
   }
@@ -363,6 +376,7 @@ class KnowledgeWatchService {
     const currentMtime = stats.mtime.toISOString()
     const originalMtime = this.originalMtimeMap.get(dirPath)
     if (originalMtime && originalMtime !== currentMtime) {
+      console.log('5. [KnowledgeWatchService] Directory changed:', dirPath)
       mainWindow.webContents.send('directory-content-changed', dirInfo.uniqueId)
     }
   }
