@@ -15,7 +15,7 @@ import { FileType, KnowledgeBaseParams, KnowledgeItem } from '@types'
 import { app } from 'electron'
 import { v4 as uuidv4 } from 'uuid'
 
-import { knowledgeWatchService } from './KnowledgeWatchService'
+import * as KnowledgeWatchService from './KnowledgeWatchService'
 import { windowService } from './WindowService'
 
 class KnowledgeService {
@@ -96,7 +96,7 @@ class KnowledgeService {
       // 先添加目录本身
       const dirMtime = fs.statSync(directory).mtime
       console.log('[KnowledgeService] add directory', directoryId)
-      knowledgeWatchService.add(item.type, directory, directoryId, dirMtime.toISOString())
+      KnowledgeWatchService.knowledgeWatchService.add(item.type, directory, directoryId, dirMtime.toISOString())
       const files = getAllFiles(directory)
       const totalFiles = files.length
       let processedFiles = 0
@@ -105,7 +105,13 @@ class KnowledgeService {
         const result = await addFileLoader(ragApplication, file, base, forceReload)
         const uniqueId = result.uniqueId || path.basename(file.path)
 
-        knowledgeWatchService.add('file', file.path, uniqueId, fileMtime.toISOString(), directoryId)
+        KnowledgeWatchService.knowledgeWatchService.add(
+          'file',
+          file.path,
+          uniqueId,
+          fileMtime.toISOString(),
+          directoryId
+        )
 
         processedFiles++
 
@@ -172,7 +178,7 @@ class KnowledgeService {
       const file = item.content as FileType
       const fileMtime = fs.statSync(file.path).mtime
       const result = await addFileLoader(ragApplication, file, base, forceReload)
-      knowledgeWatchService.add(item.type, file.path, result.uniqueId, fileMtime.toISOString())
+      KnowledgeWatchService.knowledgeWatchService.add(item.type, file.path, result.uniqueId, fileMtime.toISOString())
       return result
     }
 
@@ -188,7 +194,7 @@ class KnowledgeService {
     for (const id of uniqueIds) {
       await ragApplication.deleteLoader(id)
     }
-    knowledgeWatchService.remove(uniqueId)
+    KnowledgeWatchService.knowledgeWatchService.remove(uniqueId)
   }
 
   public search = async (
