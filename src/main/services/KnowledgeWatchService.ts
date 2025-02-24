@@ -54,7 +54,6 @@ class KnowledgeWatchService {
     const storageDir = path.join(app.getPath('userData'), 'Data', 'Files')
     const knowledgeWatcherPath = path.join(storageDir, 'KnowledgeWatcher.json')
     fs.writeFileSync(knowledgeWatcherPath, JSON.stringify(this.watchedFiles, null, 2))
-    console.log('[Save Config]', this.watchedFiles)
   }
   private async startWatching() {
     this.watcher = chokidar.watch([], {
@@ -124,7 +123,7 @@ class KnowledgeWatchService {
   }
 
   public async check() {
-    console.warn('[KnowledgeWatchService] Checking....')
+    console.debug('[KnowledgeWatchService] Checking....')
     const mainWindow = windowService.getMainWindow()
     if (!mainWindow) return
 
@@ -158,8 +157,7 @@ class KnowledgeWatchService {
     if (changedItems.size > 0) {
       this.saveConfig()
     }
-
-    console.log('[KnowledgeWatchService] Check completed')
+    console.debug('[KnowledgeWatchService] Checking done.')
   }
   public async stop() {
     await this.watcher?.close()

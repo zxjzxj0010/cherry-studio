@@ -26,7 +26,7 @@ const rootReducer = combineReducers({
   shortcuts,
   knowledge,
   minapps,
-  knowledgeFile
+  knowledgeFile,
   websearch
 })
 

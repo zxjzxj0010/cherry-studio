@@ -124,9 +124,8 @@ class KnowledgeService {
       // @ts-ignore uniqueId
       const uniqueIds = loaderResults.filter((result) => result.status === 'fulfilled').map((result) => result.uniqueId)
 
-
       return {
-        entriesAdded: results.length,
+        entriesAdded: loaderResults.length,
         uniqueId: directoryId,
         uniqueIds,
         loaderType: 'DirectoryLoader'
