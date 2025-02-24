@@ -1,4 +1,5 @@
 import {
+  CopyOutlined,
   DeleteOutlined,
   EditOutlined,
   FileTextOutlined,
@@ -58,7 +59,8 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
     getProcessingStatus,
     getDirectoryProcessingPercent,
     addNote,
-    addDirectory
+    addDirectory,
+    updateItem
   } = useKnowledge(selectedBase.id || '')
 
   const providerName = getProviderName(base?.model.provider || '')
@@ -118,7 +120,7 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
     return null
   }
 
-  const progressingPercent = getDirectoryProcessingPercent(base?.id)
+  const getProgressingPercentForItem = (itemId: string) => getDirectoryProcessingPercent(itemId)
 
   const handleAddFile = () => {
     if (disabled) {
@@ -251,6 +253,31 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
     path && addDirectory(path)
   }
 
+  const handleEditRemark = async (item: KnowledgeItem) => {
+    if (disabled) {
+      return
+    }
+
+    const editedRemark: string | undefined = await PromptPopup.show({
+      title: t('knowledge.edit_remark'),
+      message: '',
+      inputPlaceholder: t('knowledge.edit_remark_placeholder'),
+      defaultValue: item.remark || '',
+      inputProps: {
+        maxLength: 100,
+        rows: 1
+      }
+    })
+
+    if (editedRemark !== undefined && editedRemark !== null) {
+      updateItem({
+        ...item,
+        remark: editedRemark,
+        updated_at: Date.now()
+      })
+    }
+  }
+
   return (
     <MainContent>
       {!base?.version && (
@@ -332,7 +359,7 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
                       sourceId={item.id}
                       base={base}
                       getProcessingStatus={getProcessingStatus}
-                      progressingPercent={progressingPercent}
+                      getProcessingPercent={getProgressingPercentForItem}
                       type="directory"
                     />
                   </StatusIconWrapper>
@@ -357,11 +384,33 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
               <ItemContent>
                 <ItemInfo>
                   <LinkOutlined />
-                  <a href={item.content as string} target="_blank" rel="noopener noreferrer">
-                    <Tooltip title={item.content as string}>
-                      <Ellipsis text={item.content as string} />
-                    </Tooltip>
-                  </a>
+                  <Dropdown
+                    menu={{
+                      items: [
+                        {
+                          key: 'edit',
+                          icon: <EditOutlined />,
+                          label: t('knowledge.edit_remark'),
+                          onClick: () => handleEditRemark(item)
+                        },
+                        {
+                          key: 'copy',
+                          icon: <CopyOutlined />,
+                          label: t('common.copy'),
+                          onClick: () => {
+                            navigator.clipboard.writeText(item.content as string)
+                            message.success(t('message.copied'))
+                          }
+                        }
+                      ]
+                    }}
+                    trigger={['contextMenu']}>
+                    <a href={item.content as string} target="_blank" rel="noopener noreferrer">
+                      <Tooltip title={item.content as string}>
+                        <Ellipsis text={item.remark || (item.content as string)} />
+                      </Tooltip>
+                    </a>
+                  </Dropdown>
                 </ItemInfo>
                 <FlexAlignCenter>
                   {item.uniqueId && <Button type="text" icon={<RefreshIcon />} onClick={() => refreshItem(item)} />}
