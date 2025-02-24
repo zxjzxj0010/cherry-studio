@@ -22,7 +22,10 @@ const KnowledgePage: FC = () => {
   const [isDragging, setIsDragging] = useState(false)
 
   const handleAddKnowledge = async () => {
-    await AddKnowledgePopup.show({ title: t('knowledge.add.title') })
+    const newBase = await AddKnowledgePopup.show({ title: t('knowledge.add.title') })
+    if (newBase) {
+      setSelectedBase(newBase)
+    }
   }
 
   useEffect(() => {
@@ -65,6 +68,7 @@ const KnowledgePage: FC = () => {
               title: t('knowledge.delete_confirm'),
               centered: true,
               onOk: () => {
+                setSelectedBase(undefined)
                 deleteKnowledgeBase(base.id)
               }
             })

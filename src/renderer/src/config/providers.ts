@@ -212,13 +212,13 @@ export const PROVIDER_CONFIG = {
   },
   dmxapi: {
     api: {
-      url: 'https://api.dmxapi.com'
+      url: 'https://www.dmxapi.cn'
     },
     websites: {
-      official: 'https://dmxapi.com/',
-      apiKey: 'https://www.dmxapi.com/token',
-      docs: 'https://dmxapi.com/models.html#code-block',
-      models: 'https://www.dmxapi.com/pricing'
+      official: 'https://www.dmxapi.cn/register?aff=bwwY',
+      apiKey: 'https://www.dmxapi.cn/register?aff=bwwY',
+      docs: 'https://dmxapi.cn/models.html#code-block',
+      models: 'https://www.dmxapi.cn/pricing'
     }
   },
   perplexity: {
@@ -234,7 +234,7 @@ export const PROVIDER_CONFIG = {
   },
   infini: {
     api: {
-      url: 'https://cloud.infini-ai.com'
+      url: 'https://cloud.infini-ai.com/maas'
     },
     websites: {
       official: 'https://cloud.infini-ai.com/',
@@ -337,7 +337,7 @@ export const PROVIDER_CONFIG = {
     },
     websites: {
       official: 'https://console.volcengine.com/ark/',
-      apiKey: 'https://console.volcengine.com/ark/region:ark+cn-beijing/apiKey',
+      apiKey: 'https://www.volcengine.com/experience/ark?utm_term=202502dsinvite&ac=DSASUQY5&rc=DB4II4FC',
       docs: 'https://www.volcengine.com/docs/82379/1182403',
       models: 'https://console.volcengine.com/ark/region:ark+cn-beijing/endpoint'
     }
@@ -526,7 +526,7 @@ export const PROVIDER_CONFIG = {
     },
     websites: {
       official: 'https://cloud.baidu.com/',
-      apiKey: 'https://cloud.baidu.com/console/qianfan/apikey',
+      apiKey: 'https://console.bce.baidu.com/iam/#/iam/apikey/list',
       docs: 'https://cloud.baidu.com/doc/index.html',
       models: 'https://cloud.baidu.com/doc/WENXINWORKSHOP/s/Fm2vrveyu'
     }

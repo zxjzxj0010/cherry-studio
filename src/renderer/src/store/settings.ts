@@ -44,6 +44,8 @@ export interface SettingsState {
   mathEngine: 'MathJax' | 'KaTeX'
   messageStyle: 'plain' | 'bubble'
   codeStyle: CodeStyleVarious
+  gridColumns: number
+  gridPopoverTrigger: 'hover' | 'click'
   // webdav 配置 host, user, pass, path
   webdavHost: string
   webdavUser: string
@@ -67,9 +69,13 @@ export interface SettingsState {
   multiModelMessageStyle: MultiModelMessageStyle
   notionDatabaseID: string | null
   notionApiKey: string | null
+  notionPageNameKey: string | null
+  thoughtAutoCollapse: boolean
+  notionAutoSplit: boolean
+  notionSplitSize: number
 }
 
-export type MultiModelMessageStyle = 'horizontal' | 'vertical' | 'fold'
+export type MultiModelMessageStyle = 'horizontal' | 'vertical' | 'fold' | 'grid'
 
 const initialState: SettingsState = {
   showAssistants: true,
@@ -99,6 +105,8 @@ const initialState: SettingsState = {
   mathEngine: 'KaTeX',
   messageStyle: 'plain',
   codeStyle: 'auto',
+  gridColumns: 2,
+  gridPopoverTrigger: 'hover',
   webdavHost: '',
   webdavUser: '',
   webdavPass: '',
@@ -119,7 +127,11 @@ const initialState: SettingsState = {
   clickTrayToShowQuickAssistant: false,
   multiModelMessageStyle: 'fold',
   notionDatabaseID: '',
-  notionApiKey: ''
+  notionApiKey: '',
+  notionPageNameKey: 'Name',
+  thoughtAutoCollapse: true,
+  notionAutoSplit: false,
+  notionSplitSize: 90
 }
 
 const settingsSlice = createSlice({
@@ -224,6 +236,12 @@ const settingsSlice = createSlice({
     setMathEngine: (state, action: PayloadAction<'MathJax' | 'KaTeX'>) => {
       state.mathEngine = action.payload
     },
+    setGridColumns: (state, action: PayloadAction<number>) => {
+      state.gridColumns = action.payload
+    },
+    setGridPopoverTrigger: (state, action: PayloadAction<'hover' | 'click'>) => {
+      state.gridPopoverTrigger = action.payload
+    },
     setMessageStyle: (state, action: PayloadAction<'plain' | 'bubble'>) => {
       state.messageStyle = action.payload
     },
@@ -265,7 +283,7 @@ const settingsSlice = createSlice({
     setEnableQuickAssistant: (state, action: PayloadAction<boolean>) => {
       state.enableQuickAssistant = action.payload
     },
-    setMultiModelMessageStyle: (state, action: PayloadAction<'horizontal' | 'vertical' | 'fold'>) => {
+    setMultiModelMessageStyle: (state, action: PayloadAction<'horizontal' | 'vertical' | 'fold' | 'grid'>) => {
       state.multiModelMessageStyle = action.payload
     },
     setNotionDatabaseID: (state, action: PayloadAction<string>) => {
@@ -273,6 +291,18 @@ const settingsSlice = createSlice({
     },
     setNotionApiKey: (state, action: PayloadAction<string>) => {
       state.notionApiKey = action.payload
+    },
+    setNotionPageNameKey: (state, action: PayloadAction<string>) => {
+      state.notionPageNameKey = action.payload
+    },
+    setThoughtAutoCollapse: (state, action: PayloadAction<boolean>) => {
+      state.thoughtAutoCollapse = action.payload
+    },
+    setNotionAutoSplit: (state, action: PayloadAction<boolean>) => {
+      state.notionAutoSplit = action.payload
+    },
+    setNotionSplitSize: (state, action: PayloadAction<number>) => {
+      state.notionSplitSize = action.payload
     }
   }
 })
@@ -310,6 +340,8 @@ export const {
   setCodeShowLineNumbers,
   setCodeCollapsible,
   setMathEngine,
+  setGridColumns,
+  setGridPopoverTrigger,
   setMessageStyle,
   setCodeStyle,
   setTranslateModelPrompt,
@@ -324,7 +356,11 @@ export const {
   setEnableQuickAssistant,
   setMultiModelMessageStyle,
   setNotionDatabaseID,
-  setNotionApiKey
+  setNotionApiKey,
+  setNotionPageNameKey,
+  setThoughtAutoCollapse,
+  setNotionAutoSplit,
+  setNotionSplitSize
 } = settingsSlice.actions
 
 export default settingsSlice.reducer

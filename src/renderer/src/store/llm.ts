@@ -152,7 +152,7 @@ const initialState: LlmState = {
       name: 'DMXAPI',
       type: 'openai',
       apiKey: '',
-      apiHost: 'https://api.dmxapi.com',
+      apiHost: 'https://www.dmxapi.cn',
       models: SYSTEM_MODELS.dmxapi,
       isSystem: true,
       enabled: false
@@ -386,16 +386,6 @@ const initialState: LlmState = {
       models: SYSTEM_MODELS.infini,
       isSystem: true,
       enabled: false
-    },
-    {
-      id: 'lmstudio',
-      name: 'LM Studio',
-      type: 'openai',
-      apiKey: '',
-      apiHost: 'http://localhost:1234',
-      models: SYSTEM_MODELS.lmstudio,
-      isSystem: true,
-      enabled: true
     },
     {
       id: 'modelscope',

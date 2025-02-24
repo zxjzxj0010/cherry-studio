@@ -28,6 +28,8 @@ const MentionModelsButton: FC<Props> = ({ mentionModels, onMentionModel: onSelec
   const menuRef = useRef<HTMLDivElement>(null)
   const [searchText, setSearchText] = useState('')
   const itemRefs = useRef<Array<HTMLDivElement | null>>([])
+  // Add a new state to track if menu was dismissed
+  const [menuDismissed, setMenuDismissed] = useState(false)
 
   const setItemRef = (index: number, el: HTMLDivElement | null) => {
     itemRefs.current[index] = el
@@ -44,7 +46,7 @@ const MentionModelsButton: FC<Props> = ({ mentionModels, onMentionModel: onSelec
 
   const handleModelSelect = (model: Model) => {
     // Check if model is already selected
-    if (mentionModels.some((selected) => selected.id === model.id)) {
+    if (mentionModels.some((selected) => getModelUniqId(selected) === getModelUniqId(model))) {
       return
     }
     onSelect(model)
@@ -172,12 +174,13 @@ const MentionModelsButton: FC<Props> = ({ mentionModels, onMentionModel: onSelec
     loadPinnedModels()
   }, [])
 
-  // Scroll to the first menu item when the mode selection menu opens
   useLayoutEffect(() => {
-    if (isOpen && flatModelItems.length > 0 && itemRefs.current[0]) {
-      itemRefs.current[0].scrollIntoView({ block: 'nearest' })
+    if (isOpen && selectedIndex > -1 && itemRefs.current[selectedIndex]) {
+      requestAnimationFrame(() => {
+        itemRefs.current[selectedIndex]?.scrollIntoView({ block: 'nearest' })
+      })
     }
-  }, [isOpen, flatModelItems])
+  }, [isOpen, selectedIndex])
 
   useEffect(() => {
     const showModelSelector = () => {
@@ -186,6 +189,7 @@ const MentionModelsButton: FC<Props> = ({ mentionModels, onMentionModel: onSelec
       setIsOpen(true)
       setSelectedIndex(0)
       setSearchText('')
+      setMenuDismissed(false) // Reset dismissed flag when manually showing selector
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -209,7 +213,7 @@ const MentionModelsButton: FC<Props> = ({ mentionModels, onMentionModel: onSelec
         e.preventDefault()
         if (selectedIndex >= 0 && selectedIndex < flatModelItems.length) {
           const selectedModel = flatModelItems[selectedIndex].model
-          if (!mentionModels.some((selected) => selected.id === selectedModel.id)) {
+          if (!mentionModels.some((selected) => getModelUniqId(selected) === getModelUniqId(selectedModel))) {
             flatModelItems[selectedIndex].onClick()
           }
           setIsOpen(false)
@@ -218,6 +222,7 @@ const MentionModelsButton: FC<Props> = ({ mentionModels, onMentionModel: onSelec
       } else if (e.key === 'Escape') {
         setIsOpen(false)
         setSearchText('')
+        setMenuDismissed(true) // Set dismissed flag when Escape is pressed
       }
     }
 
@@ -226,14 +231,18 @@ const MentionModelsButton: FC<Props> = ({ mentionModels, onMentionModel: onSelec
       const cursorPosition = textArea.selectionStart
       const textBeforeCursor = textArea.value.substring(0, cursorPosition)
       const lastAtIndex = textBeforeCursor.lastIndexOf('@')
-
+      const textBeforeLastAt = textBeforeCursor.slice(0, lastAtIndex)
       if (lastAtIndex === -1 || textBeforeCursor.slice(lastAtIndex + 1).includes(' ')) {
         setIsOpen(false)
         setSearchText('')
-      } else if (lastAtIndex !== -1) {
-        // Get the text after @ for search
-        const searchStr = textBeforeCursor.slice(lastAtIndex + 1)
-        setSearchText(searchStr)
+        setMenuDismissed(false) // Reset dismissed flag when @ is removed
+      } else {
+        // Only open menu if it wasn't explicitly dismissed
+        if (!menuDismissed && (textBeforeLastAt.slice(-1) === ' ' || lastAtIndex === 0)) {
+          setIsOpen(true)
+          const searchStr = textBeforeCursor.slice(lastAtIndex + 1)
+          setSearchText(searchStr)
+        }
       }
     }
 
@@ -252,39 +261,42 @@ const MentionModelsButton: FC<Props> = ({ mentionModels, onMentionModel: onSelec
         textArea.removeEventListener('input', handleTextChange)
       }
     }
-  }, [isOpen, selectedIndex, flatModelItems, mentionModels])
-
-  // Hide dropdown if no models available
-  if (flatModelItems.length === 0) {
-    return null
-  }
+  }, [isOpen, selectedIndex, flatModelItems, mentionModels, menuDismissed])
 
   const menu = (
     <div ref={menuRef} className="ant-dropdown-menu">
-      {modelMenuItems.map((group, groupIndex) => {
-        if (!group) return null
+      {flatModelItems.length > 0 ? (
+        modelMenuItems.map((group, groupIndex) => {
+          if (!group) return null
 
-        // Calculate the starting index for this group's items
-        const startIndex = modelMenuItems.slice(0, groupIndex).reduce((acc, g) => acc + (g?.children?.length || 0), 0)
+          // Calculate starting index for items in this group
+          const startIndex = modelMenuItems.slice(0, groupIndex).reduce((acc, g) => acc + (g?.children?.length || 0), 0)
 
-        return (
-          <div key={group.key} className="ant-dropdown-menu-item-group">
-            <div className="ant-dropdown-menu-item-group-title">{group.label}</div>
-            <div>
-              {group.children.map((item, idx) => (
-                <div
-                  key={item.key}
-                  ref={(el) => setItemRef(startIndex + idx, el)}
-                  className={`ant-dropdown-menu-item ${selectedIndex === startIndex + idx ? 'ant-dropdown-menu-item-selected' : ''}`}
-                  onClick={item.onClick}>
-                  <span className="ant-dropdown-menu-item-icon">{item.icon}</span>
-                  {item.label}
-                </div>
-              ))}
+          return (
+            <div key={group.key} className="ant-dropdown-menu-item-group">
+              <div className="ant-dropdown-menu-item-group-title">{group.label}</div>
+              <div>
+                {group.children.map((item, idx) => (
+                  <div
+                    key={item.key}
+                    ref={(el) => setItemRef(startIndex + idx, el)}
+                    className={`ant-dropdown-menu-item ${
+                      selectedIndex === startIndex + idx ? 'ant-dropdown-menu-item-selected' : ''
+                    }`}
+                    onClick={item.onClick}>
+                    <span className="ant-dropdown-menu-item-icon">{item.icon}</span>
+                    {item.label}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )
-      })}
+          )
+        })
+      ) : (
+        <div className="ant-dropdown-menu-item-group">
+          <div className="ant-dropdown-menu-item no-results">{t('models.no_matches')}</div>
+        </div>
+      )}
     </div>
   )
 
@@ -333,6 +345,17 @@ const DropdownMenuStyle = createGlobalStyle`
 
       &::-webkit-scrollbar-track {
         background: transparent;
+      }
+
+      .no-results {
+        padding: 8px 12px;
+        color: var(--color-text-3);
+        cursor: default;
+        font-size: 14px;
+        
+        &:hover {
+          background: none;
+        }
       }
     }
 

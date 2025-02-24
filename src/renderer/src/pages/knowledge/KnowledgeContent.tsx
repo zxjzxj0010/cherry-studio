@@ -1,4 +1,5 @@
 import {
+  CopyOutlined,
   DeleteOutlined,
   EditOutlined,
   FileTextOutlined,
@@ -35,7 +36,7 @@ interface KnowledgeContentProps {
   selectedBase: KnowledgeBase
 }
 
-const fileTypes = [...bookExts, ...documentExts, ...textExts]
+const fileTypes = [...bookExts, ...thirdPartyApplicationExts, ...documentExts, ...textExts]
 const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
   const { t } = useTranslation()
 
@@ -53,9 +54,11 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
     addSitemap,
     removeItem,
     getProcessingStatus,
+    getDirectoryProcessingPercent,
     addNote,
     addDirectory,
     updateKnowledgeBase
+    updateItem
   } = useKnowledge(selectedBase.id || '')
 
   const providerName = getProviderName(base?.model.provider || '')
@@ -78,6 +81,8 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
   if (!base) {
     return null
   }
+
+  const getProgressingPercentForItem = (itemId: string) => getDirectoryProcessingPercent(itemId)
 
   const handleAddFile = () => {
     if (disabled) {
@@ -209,6 +214,31 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
     path && addDirectory(path)
   }
 
+  const handleEditRemark = async (item: KnowledgeItem) => {
+    if (disabled) {
+      return
+    }
+
+    const editedRemark: string | undefined = await PromptPopup.show({
+      title: t('knowledge.edit_remark'),
+      message: '',
+      inputPlaceholder: t('knowledge.edit_remark_placeholder'),
+      defaultValue: item.remark || '',
+      inputProps: {
+        maxLength: 100,
+        rows: 1
+      }
+    })
+
+    if (editedRemark !== undefined && editedRemark !== null) {
+      updateItem({
+        ...item,
+        remark: editedRemark,
+        updated_at: Date.now()
+      })
+    }
+  }
+
   return (
     <MainContent>
       {!base?.version && (
@@ -232,7 +262,7 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
           style={{ marginTop: 10, background: 'transparent' }}>
           <p className="ant-upload-text">{t('knowledge.drag_file')}</p>
           <p className="ant-upload-hint">
-            {t('knowledge.file_hint', { file_types: fileTypes.slice(0, 6).join(', ').replaceAll('.', '') })}
+            {t('knowledge.file_hint', { file_types: 'TXT, MD, HTML, PDF, DOCX, PPTX, XLSX, EPUB...' })}
           </p>
         </Dragger>
       </FileSection>
@@ -254,7 +284,7 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
                 <FlexAlignCenter>
                   {item.uniqueId && <Button type="text" icon={<RefreshIcon />} onClick={() => refreshItem(item)} />}
                   <StatusIconWrapper>
-                    <StatusIcon sourceId={item.id} base={base} getProcessingStatus={getProcessingStatus} />
+                    <StatusIcon sourceId={item.id} base={base} getProcessingStatus={getProcessingStatus} type="file" />
                   </StatusIconWrapper>
                   <Button type="text" danger onClick={() => removeItem(item)} icon={<DeleteOutlined />} />
                 </FlexAlignCenter>
@@ -286,7 +316,13 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
                 <FlexAlignCenter>
                   {item.uniqueId && <Button type="text" icon={<RefreshIcon />} onClick={() => refreshItem(item)} />}
                   <StatusIconWrapper>
-                    <StatusIcon sourceId={item.id} base={base} getProcessingStatus={getProcessingStatus} />
+                    <StatusIcon
+                      sourceId={item.id}
+                      base={base}
+                      getProcessingStatus={getProcessingStatus}
+                      getProcessingPercent={getProgressingPercentForItem}
+                      type="directory"
+                    />
                   </StatusIconWrapper>
                   <Button type="text" danger onClick={() => removeItem(item)} icon={<DeleteOutlined />} />
                 </FlexAlignCenter>
@@ -309,16 +345,38 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
               <ItemContent>
                 <ItemInfo>
                   <LinkOutlined />
-                  <a href={item.content as string} target="_blank" rel="noopener noreferrer">
-                    <Tooltip title={item.content as string}>
-                      <Ellipsis text={item.content as string} />
-                    </Tooltip>
-                  </a>
+                  <Dropdown
+                    menu={{
+                      items: [
+                        {
+                          key: 'edit',
+                          icon: <EditOutlined />,
+                          label: t('knowledge.edit_remark'),
+                          onClick: () => handleEditRemark(item)
+                        },
+                        {
+                          key: 'copy',
+                          icon: <CopyOutlined />,
+                          label: t('common.copy'),
+                          onClick: () => {
+                            navigator.clipboard.writeText(item.content as string)
+                            message.success(t('message.copied'))
+                          }
+                        }
+                      ]
+                    }}
+                    trigger={['contextMenu']}>
+                    <a href={item.content as string} target="_blank" rel="noopener noreferrer">
+                      <Tooltip title={item.content as string}>
+                        <Ellipsis text={item.remark || (item.content as string)} />
+                      </Tooltip>
+                    </a>
+                  </Dropdown>
                 </ItemInfo>
                 <FlexAlignCenter>
                   {item.uniqueId && <Button type="text" icon={<RefreshIcon />} onClick={() => refreshItem(item)} />}
                   <StatusIconWrapper>
-                    <StatusIcon sourceId={item.id} base={base} getProcessingStatus={getProcessingStatus} />
+                    <StatusIcon sourceId={item.id} base={base} getProcessingStatus={getProcessingStatus} type="url" />
                   </StatusIconWrapper>
                   <Button type="text" danger onClick={() => removeItem(item)} icon={<DeleteOutlined />} />
                 </FlexAlignCenter>
@@ -350,7 +408,12 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
                 <FlexAlignCenter>
                   {item.uniqueId && <Button type="text" icon={<RefreshIcon />} onClick={() => refreshItem(item)} />}
                   <StatusIconWrapper>
-                    <StatusIcon sourceId={item.id} base={base} getProcessingStatus={getProcessingStatus} />
+                    <StatusIcon
+                      sourceId={item.id}
+                      base={base}
+                      getProcessingStatus={getProcessingStatus}
+                      type="sitemap"
+                    />
                   </StatusIconWrapper>
                   <Button type="text" danger onClick={() => removeItem(item)} icon={<DeleteOutlined />} />
                 </FlexAlignCenter>
@@ -377,7 +440,7 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
                 <FlexAlignCenter>
                   <Button type="text" onClick={() => handleEditNote(note)} icon={<EditOutlined />} />
                   <StatusIconWrapper>
-                    <StatusIcon sourceId={note.id} base={base} getProcessingStatus={getProcessingStatus} />
+                    <StatusIcon sourceId={note.id} base={base} getProcessingStatus={getProcessingStatus} type="note" />
                   </StatusIconWrapper>
                   <Button type="text" danger onClick={() => removeItem(note)} icon={<DeleteOutlined />} />
                 </FlexAlignCenter>
