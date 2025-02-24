@@ -1,6 +1,7 @@
 import store from '@renderer/store'
 import { WebSearchProvider } from '@renderer/types'
 import { tavily } from '@tavily/core'
+import dayjs from 'dayjs'
 
 class WebSearchService {
   public isWebSearchEnabled(): boolean {
@@ -23,9 +24,10 @@ class WebSearchService {
   }
 
   public async search(query: string) {
+    const formatted_query = `today is ${dayjs().format('YYYY-MM-DD')} \r\n ${query}`
     const provider = this.getWebSearchProvider()
     const tvly = tavily({ apiKey: provider.apiKey })
-    return await tvly.search(query, {
+    return await tvly.search(formatted_query, {
       maxResults: 5
     })
   }
