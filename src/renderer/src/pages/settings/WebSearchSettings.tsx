@@ -29,10 +29,6 @@ const WebSearchSettings: FC = () => {
   const [apiKey, setApiKey] = useState(provider.apiKey)
   const logo = theme === 'dark' ? tavilyLogoDark : tavilyLogo
   const searchWithTime = useAppSelector((state) => state.websearch.searchWithTime)
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
   const dispatch = useAppDispatch()
 
   useEffect(() => {
@@ -74,17 +70,6 @@ const WebSearchSettings: FC = () => {
         <SettingRow>
           <SettingRowTitle>{t('settings.websearch.search_with_time')}</SettingRowTitle>
           <Switch checked={searchWithTime} onChange={(checked) => dispatch(setSearchWithTime(checked))} />
-<<<<<<< Updated upstream
-=======
-        </SettingRow>
-      </SettingGroup>
-      <SettingGroup theme={theme}>
-        <SettingTitle>{t('settings.websearch.blacklist')}</SettingTitle>
-        <SettingDivider />
-
-        <SettingRow>
-          <SettingRowTitle>{t('settings.websearch.search_with_time')}</SettingRowTitle>
->>>>>>> Stashed changes
         </SettingRow>
       </SettingGroup>
     </SettingContainer>

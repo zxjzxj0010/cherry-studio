@@ -9,7 +9,6 @@ import { EVENT_NAMES, EventEmitter } from '@renderer/services/EventService'
 import { getContextCount, getMessageModelId } from '@renderer/services/MessagesService'
 import { getModelUniqId } from '@renderer/services/ModelService'
 import { estimateHistoryTokens, estimateMessageUsage } from '@renderer/services/TokenService'
-import store from '@renderer/store'
 import { Message, Topic } from '@renderer/types'
 import { classNames, runAsyncFunction } from '@renderer/utils'
 import { Divider } from 'antd'
@@ -63,7 +62,6 @@ const MessageItem: FC<Props> = ({
   const { showMessageDivider, messageFont, fontSize } = useSettings()
   const messageContainerRef = useRef<HTMLDivElement>(null)
   const topic = useTopic(assistant, _topic?.id)
-  const searchWithTime = store.getState().websearch.searchWithTime
 
   const isLastMessage = index === 0
   const isAssistantMessage = message.role === 'assistant'
@@ -150,7 +148,6 @@ const MessageItem: FC<Props> = ({
               messages.findIndex((m) => m.id === message.id)
             ),
           assistant: assistantWithModel,
-          searchWithTime,
           onResponse: (msg) => {
             setMessage(msg)
             if (msg.status !== 'pending') {

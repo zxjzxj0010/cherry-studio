@@ -35,7 +35,6 @@ const websearchSlice = createSlice({
       }
     },
     setSearchWithTime: (state, action: PayloadAction<boolean>) => {
-      console.log('action.payload', action.payload)
       state.searchWithTime = action.payload
     }
   }

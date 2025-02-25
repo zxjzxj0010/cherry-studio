@@ -23,7 +23,9 @@ class WebSearchService {
     return provider
   }
 
-  public async search(query: string, searchWithTime: boolean) {
+  public async search(query: string) {
+    const searchWithTime = store.getState().websearch.searchWithTime
+    console.log('searchWithTime', searchWithTime)
     let formatted_query = query
     if (searchWithTime) {
       formatted_query = `today is ${dayjs().format('YYYY-MM-DD')} \r\n ${query}`
