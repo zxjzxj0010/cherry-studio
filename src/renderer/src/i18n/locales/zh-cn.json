@@ -808,7 +808,10 @@
           "api_key": "Tavily API 密钥",
           "api_key.placeholder": "请输入 Tavily API 密钥"
         },
-        "search_with_time": "搜索包含日期"
+        "search_with_time": "搜索包含日期",
+        "search_max_result": "搜索结果个数",
+        "search_result_default": "默认",
+        "blacklist": "黑名单"
       }
     },
     "translate": {

@@ -4,8 +4,8 @@ import { HStack } from '@renderer/components/Layout'
 import { useTheme } from '@renderer/context/ThemeProvider'
 import { useWebSearchProvider } from '@renderer/hooks/useWebSearchProviders'
 import { useAppDispatch, useAppSelector } from '@renderer/store'
-import { setSearchWithTime } from '@renderer/store/websearch'
-import { Input, Switch, Typography } from 'antd'
+import { setMaxResult, setSearchWithTime } from '@renderer/store/websearch'
+import { Input, Slider, Switch, Typography } from 'antd'
 import { FC, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
@@ -29,6 +29,7 @@ const WebSearchSettings: FC = () => {
   const [apiKey, setApiKey] = useState(provider.apiKey)
   const logo = theme === 'dark' ? tavilyLogoDark : tavilyLogo
   const searchWithTime = useAppSelector((state) => state.websearch.searchWithTime)
+  const maxResults = useAppSelector((state) => state.websearch.maxResults)
   const dispatch = useAppDispatch()
 
   useEffect(() => {
@@ -70,6 +71,26 @@ const WebSearchSettings: FC = () => {
         <SettingRow>
           <SettingRowTitle>{t('settings.websearch.search_with_time')}</SettingRowTitle>
           <Switch checked={searchWithTime} onChange={(checked) => dispatch(setSearchWithTime(checked))} />
+        </SettingRow>
+        <SettingRow>
+          <SettingRowTitle>{t('settings.websearch.search_max_result')}</SettingRowTitle>
+          <Slider
+            defaultValue={maxResults}
+            style={{ width: '200px' }}
+            min={1}
+            max={10}
+            step={1}
+            marks={{ 1: '1', 5: t('settings.websearch.search_result_default'), 10: '10' }}
+            onChangeComplete={(value) => dispatch(setMaxResult(value))}
+          />
+        </SettingRow>
+      </SettingGroup>
+      <SettingGroup theme={theme}>
+        <SettingTitle>{t('settings.websearch.blacklist')}</SettingTitle>
+        <SettingDivider />
+
+        <SettingRow>
+          <SettingRowTitle>{t('settings.websearch.search_with_time')}</SettingRowTitle>
         </SettingRow>
       </SettingGroup>
     </SettingContainer>
