@@ -27,7 +27,7 @@ const MessageItem: FC<Props> = ({ message: _message, index, total, route, onSetM
   const [message, setMessage] = useState(_message)
   const model = useModel(getMessageModelId(message))
   const isBubbleStyle = true
-  const { messageFont, fontSize } = useSettings()
+  const { messageFont, fontSize, searchWithTime } = useSettings()
   const messageContainerRef = useRef<HTMLDivElement>(null)
 
   const isAssistantMessage = message.role === 'assistant'
@@ -53,6 +53,7 @@ const MessageItem: FC<Props> = ({ message: _message, index, total, route, onSetM
               messages.findIndex((m) => m.id === message.id)
             ),
           assistant: { ...getDefaultAssistant(), model: getDefaultModel() },
+          searchWithTime,
           onResponse: (msg) => {
             setMessage(msg)
             if (msg.status !== 'pending') {

@@ -23,11 +23,13 @@ export async function fetchChatCompletion({
   message,
   messages,
   assistant,
+  searchWithTime,
   onResponse
 }: {
   message: Message
   messages: Message[]
   assistant: Assistant
+  searchWithTime: boolean
   onResponse: (message: Message) => void
 }) {
   window.keyv.set(EVENT_NAMES.CHAT_COMPLETION_PAUSED, false)
@@ -67,7 +69,7 @@ export async function fetchChatCompletion({
             })
           }
           onResponse({ ...message, status: 'searching' })
-          const webSearch = await WebSearchService.search(lastMessage.content)
+          const webSearch = await WebSearchService.search(lastMessage.content, searchWithTime)
           message.metadata = {
             ...message.metadata,
             tavily: webSearch

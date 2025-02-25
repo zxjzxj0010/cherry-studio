@@ -1,6 +1,7 @@
 import store, { useAppDispatch, useAppSelector } from '@renderer/store'
 import {
   SendMessageShortcut,
+  setSearchWithTime,
   setSendMessageShortcut as _setSendMessageShortcut,
   setSidebarIcons,
   setTargetLanguage,
@@ -45,6 +46,9 @@ export function useSettings() {
     },
     updateSidebarDisabledIcons(icons: SidebarIcon[]) {
       dispatch(setSidebarIcons({ disabled: icons }))
+    },
+    setSearchWithTime(isActive: boolean) {
+      dispatch(setSearchWithTime(isActive))
     }
   }
 }

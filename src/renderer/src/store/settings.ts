@@ -73,6 +73,7 @@ export interface SettingsState {
   thoughtAutoCollapse: boolean
   notionAutoSplit: boolean
   notionSplitSize: number
+  searchWithTime: boolean
 }
 
 export type MultiModelMessageStyle = 'horizontal' | 'vertical' | 'fold' | 'grid'
@@ -131,7 +132,8 @@ const initialState: SettingsState = {
   notionPageNameKey: 'Name',
   thoughtAutoCollapse: true,
   notionAutoSplit: false,
-  notionSplitSize: 90
+  notionSplitSize: 90,
+  searchWithTime: true
 }
 
 const settingsSlice = createSlice({
@@ -303,6 +305,9 @@ const settingsSlice = createSlice({
     },
     setNotionSplitSize: (state, action: PayloadAction<number>) => {
       state.notionSplitSize = action.payload
+    },
+    setSearchWithTime: (state, action: PayloadAction<boolean>) => {
+      state.searchWithTime = action.payload
     }
   }
 })
@@ -360,7 +365,8 @@ export const {
   setNotionPageNameKey,
   setThoughtAutoCollapse,
   setNotionAutoSplit,
-  setNotionSplitSize
+  setNotionSplitSize,
+  setSearchWithTime
 } = settingsSlice.actions
 
 export default settingsSlice.reducer
