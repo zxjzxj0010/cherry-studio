@@ -58,5 +58,9 @@ export const {
   setExcludeDomains,
   setMaxResult
 } = websearchSlice.actions
+    }
+  }
+})
+
 
 export default websearchSlice.reducer

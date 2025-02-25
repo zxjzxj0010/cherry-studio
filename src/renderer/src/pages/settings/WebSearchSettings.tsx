@@ -40,7 +40,6 @@ const WebSearchSettings: FC = () => {
 
   useEffect(() => {
     return () => {
-      console.log('apiKey', apiKey, provider.apiKey)
       if (apiKey && apiKey !== provider.apiKey) {
         updateProvider({ ...provider, apiKey })
       }
