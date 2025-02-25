@@ -4,12 +4,7 @@ import { HStack } from '@renderer/components/Layout'
 import { useTheme } from '@renderer/context/ThemeProvider'
 import { useWebSearchProvider } from '@renderer/hooks/useWebSearchProviders'
 import { useAppDispatch, useAppSelector } from '@renderer/store'
-import {
-  setExcludeDomains,
-  setManualBlacklistDomains,
-  setMaxResult,
-  setSearchWithTime
-} from '@renderer/store/websearch'
+import { setExcludeDomains, setMaxResult, setSearchWithTime } from '@renderer/store/websearch'
 import { formatDomains } from '@renderer/utils/blacklist'
 import { Alert, Input, Slider, Switch, Typography } from 'antd'
 import TextArea from 'antd/es/input/TextArea'
@@ -37,8 +32,7 @@ const WebSearchSettings: FC = () => {
   const logo = theme === 'dark' ? tavilyLogoDark : tavilyLogo
   const searchWithTime = useAppSelector((state) => state.websearch.searchWithTime)
   const maxResults = useAppSelector((state) => state.websearch.maxResults)
-  const manualBlacklistDomains = useAppSelector((state) => state.websearch.manualBlacklistDomains)
-  const subscribedBlacklistDomains = useAppSelector((state) => state.websearch.subscribedBlacklistDomains)
+  const excludeDomains = useAppSelector((state) => state.websearch.excludeDomains)
   const [errFormat, setErrFormat] = useState(false)
   const [blacklistInput, setBlacklistInput] = useState('')
 
@@ -54,24 +48,16 @@ const WebSearchSettings: FC = () => {
   }, [apiKey, provider, updateProvider])
 
   useEffect(() => {
-    if (manualBlacklistDomains) {
-      setBlacklistInput(manualBlacklistDomains.join('\n'))
+    if (excludeDomains) {
+      setBlacklistInput(excludeDomains.join('\n'))
     }
-  }, [manualBlacklistDomains])
-
-  useEffect(() => {
-    const combinedBlacklist = [
-      ...(manualBlacklistDomains ? manualBlacklistDomains : []),
-      ...(subscribedBlacklistDomains ? subscribedBlacklistDomains : [])
-    ]
-    dispatch(setExcludeDomains(combinedBlacklist))
-  }, [manualBlacklistDomains, subscribedBlacklistDomains, dispatch])
+  }, [excludeDomains])
 
   function updateManualBlacklist(blacklist: string) {
     const blacklistDomains = blacklist.split('\n').filter((url) => url.trim() !== '')
     const { formattedDomains, hasError } = formatDomains(blacklistDomains)
     setErrFormat(hasError)
-    dispatch(setManualBlacklistDomains(formattedDomains))
+    dispatch(setExcludeDomains(formattedDomains))
   }
 
   return (

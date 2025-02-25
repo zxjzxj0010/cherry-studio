@@ -5,8 +5,6 @@ export interface WebSearchState {
   providers: WebSearchProvider[]
   searchWithTime: boolean
   maxResults: number
-  manualBlacklistDomains: string[]
-  subscribedBlacklistDomains: string[]
   excludeDomains: string[]
 }
 
@@ -21,8 +19,6 @@ const initialState: WebSearchState = {
   ],
   searchWithTime: true,
   maxResults: 5,
-  manualBlacklistDomains: [],
-  subscribedBlacklistDomains: [],
   excludeDomains: []
 }
 
@@ -48,12 +44,6 @@ const websearchSlice = createSlice({
     setMaxResult: (state, action: PayloadAction<number>) => {
       state.maxResults = action.payload
     },
-    setManualBlacklistDomains: (state, action: PayloadAction<string[]>) => {
-      state.manualBlacklistDomains = action.payload
-    },
-    setSubscribedBlacklistDomains: (state, action: PayloadAction<string[]>) => {
-      state.subscribedBlacklistDomains = action.payload
-    },
     setExcludeDomains: (state, action: PayloadAction<string[]>) => {
       state.excludeDomains = action.payload
     }
@@ -66,9 +56,7 @@ export const {
   setDefaultProvider,
   setSearchWithTime,
   setExcludeDomains,
-  setMaxResult,
-  setManualBlacklistDomains,
-  setSubscribedBlacklistDomains
+  setMaxResult
 } = websearchSlice.actions
 
 export default websearchSlice.reducer
