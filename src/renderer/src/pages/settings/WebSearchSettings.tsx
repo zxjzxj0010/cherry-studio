@@ -3,7 +3,7 @@ import tavilyLogoDark from '@renderer/assets/images/search/tavily-dark.svg'
 import { HStack } from '@renderer/components/Layout'
 import { useTheme } from '@renderer/context/ThemeProvider'
 import { useWebSearchProvider } from '@renderer/hooks/useWebSearchProviders'
-import store, { useAppDispatch } from '@renderer/store'
+import { useAppDispatch, useAppSelector } from '@renderer/store'
 import { setSearchWithTime } from '@renderer/store/websearch'
 import { Input, Switch, Typography } from 'antd'
 import { FC, useEffect, useState } from 'react'
@@ -28,6 +28,7 @@ const WebSearchSettings: FC = () => {
   const { provider, updateProvider } = useWebSearchProvider('tavily')
   const [apiKey, setApiKey] = useState(provider.apiKey)
   const logo = theme === 'dark' ? tavilyLogoDark : tavilyLogo
+  const searchWithTime = useAppSelector((state) => state.websearch.searchWithTime)
   const dispatch = useAppDispatch()
 
   useEffect(() => {
@@ -68,10 +69,7 @@ const WebSearchSettings: FC = () => {
 
         <SettingRow>
           <SettingRowTitle>{t('settings.websearch.search_with_time')}</SettingRowTitle>
-          <Switch
-            checked={store.getState().websearch.searchWithTime}
-            onChange={(checked) => dispatch(setSearchWithTime(checked))}
-          />
+          <Switch checked={searchWithTime} onChange={(checked) => dispatch(setSearchWithTime(checked))} />
         </SettingRow>
       </SettingGroup>
     </SettingContainer>
