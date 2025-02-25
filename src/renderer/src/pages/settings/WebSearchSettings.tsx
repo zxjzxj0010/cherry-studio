@@ -57,6 +57,7 @@ const WebSearchSettings: FC = () => {
     const blacklistDomains = blacklist.split('\n').filter((url) => url.trim() !== '')
     const { formattedDomains, hasError } = formatDomains(blacklistDomains)
     setErrFormat(hasError)
+    if (hasError) return
     dispatch(setExcludeDomains(formattedDomains))
   }
 
@@ -99,7 +100,7 @@ const WebSearchSettings: FC = () => {
             min={1}
             max={20}
             step={1}
-            marks={{ 1: '1', 5: t('settings.websearch.search_result_default'), 10: '10' }}
+            marks={{ 1: '1', 5: t('settings.websearch.search_result_default'), 20: '20' }}
             onChangeComplete={(value) => dispatch(setMaxResult(value))}
           />
         </SettingRow>
