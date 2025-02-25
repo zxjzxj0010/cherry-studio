@@ -4,8 +4,15 @@ import { HStack } from '@renderer/components/Layout'
 import { useTheme } from '@renderer/context/ThemeProvider'
 import { useWebSearchProvider } from '@renderer/hooks/useWebSearchProviders'
 import { useAppDispatch, useAppSelector } from '@renderer/store'
-import { setMaxResult, setSearchWithTime } from '@renderer/store/websearch'
-import { Input, Slider, Switch, Typography } from 'antd'
+import {
+  setExcludeDomains,
+  setManualBlacklistDomains,
+  setMaxResult,
+  setSearchWithTime
+} from '@renderer/store/websearch'
+import { formatDomains } from '@renderer/utils/blacklist'
+import { Alert, Input, Slider, Switch, Typography } from 'antd'
+import TextArea from 'antd/es/input/TextArea'
 import { FC, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
@@ -30,6 +37,11 @@ const WebSearchSettings: FC = () => {
   const logo = theme === 'dark' ? tavilyLogoDark : tavilyLogo
   const searchWithTime = useAppSelector((state) => state.websearch.searchWithTime)
   const maxResults = useAppSelector((state) => state.websearch.maxResults)
+  const manualBlacklistDomains = useAppSelector((state) => state.websearch.manualBlacklistDomains)
+  const subscribedBlacklistDomains = useAppSelector((state) => state.websearch.subscribedBlacklistDomains)
+  const [errFormat, setErrFormat] = useState(false)
+  const [blacklistInput, setBlacklistInput] = useState('')
+
   const dispatch = useAppDispatch()
 
   useEffect(() => {
@@ -40,6 +52,27 @@ const WebSearchSettings: FC = () => {
       }
     }
   }, [apiKey, provider, updateProvider])
+
+  useEffect(() => {
+    if (manualBlacklistDomains) {
+      setBlacklistInput(manualBlacklistDomains.join('\n'))
+    }
+  }, [manualBlacklistDomains])
+
+  useEffect(() => {
+    const combinedBlacklist = [
+      ...(manualBlacklistDomains ? manualBlacklistDomains : []),
+      ...(subscribedBlacklistDomains ? subscribedBlacklistDomains : [])
+    ]
+    dispatch(setExcludeDomains(combinedBlacklist))
+  }, [manualBlacklistDomains, subscribedBlacklistDomains, dispatch])
+
+  function updateManualBlacklist(blacklist: string) {
+    const blacklistDomains = blacklist.split('\n').filter((url) => url.trim() !== '')
+    const { formattedDomains, hasError } = formatDomains(blacklistDomains)
+    setErrFormat(hasError)
+    dispatch(setManualBlacklistDomains(formattedDomains))
+  }
 
   return (
     <SettingContainer theme={theme}>
@@ -88,10 +121,18 @@ const WebSearchSettings: FC = () => {
       <SettingGroup theme={theme}>
         <SettingTitle>{t('settings.websearch.blacklist')}</SettingTitle>
         <SettingDivider />
-
         <SettingRow>
-          <SettingRowTitle>{t('settings.websearch.search_with_time')}</SettingRowTitle>
+          <SettingRowTitle>{t('settings.websearch.blacklist_description')}</SettingRowTitle>
         </SettingRow>
+        <TextArea
+          value={blacklistInput}
+          onChange={(e) => setBlacklistInput(e.target.value)}
+          onBlur={() => updateManualBlacklist(blacklistInput)}
+          placeholder={t('settings.websearch.blacklist_tooltip')}
+          autoSize={{ minRows: 2, maxRows: 6 }}
+          rows={4}
+        />
+        {errFormat && <Alert message={t('settings.websearch.blacklist_tooltip')} type="error" />}
       </SettingGroup>
     </SettingContainer>
   )

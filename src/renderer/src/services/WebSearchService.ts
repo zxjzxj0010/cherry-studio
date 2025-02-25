@@ -27,6 +27,7 @@ class WebSearchService {
     const searchWithTime = store.getState().websearch.searchWithTime
     const maxResults = store.getState().websearch.maxResults
     const excludeDomains = store.getState().websearch.excludeDomains
+    console.log('excludeDomains', excludeDomains)
     let formatted_query = query
     if (searchWithTime) {
       formatted_query = `today is ${dayjs().format('YYYY-MM-DD')} \r\n ${query}`

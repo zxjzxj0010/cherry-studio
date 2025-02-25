@@ -1124,6 +1124,10 @@ const migrateConfig = {
   },
   '73': (state: RootState) => {
     state.websearch.searchWithTime = true
+    state.websearch.maxResults = 5
+    state.websearch.manualBlacklistDomains = []
+    state.websearch.subscribedBlacklistDomains = []
+    state.websearch.excludeDomains = []
     return state
   }
 }
