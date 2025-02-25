@@ -6,6 +6,7 @@ import MessageErrorBoundary from '@renderer/pages/home/Messages/MessageErrorBoun
 import { fetchChatCompletion } from '@renderer/services/ApiService'
 import { getDefaultAssistant, getDefaultModel } from '@renderer/services/AssistantService'
 import { getMessageModelId } from '@renderer/services/MessagesService'
+import store from '@renderer/store'
 import { Message } from '@renderer/types'
 import { isMiniWindow } from '@renderer/utils'
 import { Dispatch, FC, memo, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
@@ -27,8 +28,9 @@ const MessageItem: FC<Props> = ({ message: _message, index, total, route, onSetM
   const [message, setMessage] = useState(_message)
   const model = useModel(getMessageModelId(message))
   const isBubbleStyle = true
-  const { messageFont, fontSize, searchWithTime } = useSettings()
+  const { messageFont, fontSize } = useSettings()
   const messageContainerRef = useRef<HTMLDivElement>(null)
+  const searchWithTime = store.getState().websearch.searchWithTime
 
   const isAssistantMessage = message.role === 'assistant'
 

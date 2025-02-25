@@ -1123,7 +1123,7 @@ const migrateConfig = {
     return state
   },
   '73': (state: RootState) => {
-    state.settings.searchWithTime = true
+    state.websearch.searchWithTime = true
     return state
   }
 }
