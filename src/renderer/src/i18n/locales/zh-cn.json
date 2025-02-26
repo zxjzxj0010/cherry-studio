@@ -164,6 +164,7 @@
       "clear": "清除",
       "close": "关闭",
       "copy": "复制",
+      "copied": "已复制",
       "cut": "剪切",
       "default": "默认",
       "delete": "删除",
@@ -755,7 +756,12 @@
           "logout": "退出Github",
           "auth_success_title": "认证成功",
           "code_generated_title": "获取Device Code",
-          "code_generated_desc": "请将device code复制到下面的浏览器链接中"
+          "code_generated_desc": "请将device code复制到下面的浏览器链接中",
+          "code_failed": "获取Device Code失败，请重试",
+          "auth_success": "Github Copilot认证成功",
+          "auth_failed": "Github Copilot认证失败",
+          "logout_success": "已成功退出",
+          "logout_failed": "退出失败，请重试"
         }
       },
       "proxy": {

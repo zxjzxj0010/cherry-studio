@@ -1,97 +1,143 @@
-import path from 'node:path'
-
-import axios from 'axios'
+import axios, { AxiosRequestConfig } from 'axios'
 import { app } from 'electron'
-import fs from 'fs'
+import fs from 'fs/promises'
+import path from 'path'
+
+interface AuthResponse {
+  device_code: string
+  user_code: string
+  verification_uri: string
+}
+
+interface TokenResponse {
+  access_token: string
+}
+
+interface CopilotTokenResponse {
+  token: string
+}
 
 class CopilotService {
-  public getAuthMessage = async (): Promise<{ device_code: string; user_code: string; verification_uri: string }> => {
-    const { device_code, user_code, verification_uri } = await axios
-      .post(
+  private readonly GITHUB_CLIENT_ID: string
+  private readonly TOKEN_FILE_PATH: string
+  private readonly DEFAULT_HEADERS: Record<string, string>
+
+  constructor() {
+    this.GITHUB_CLIENT_ID = 'Iv1.b507a08c87ecfe98'
+    this.TOKEN_FILE_PATH = path.join(app.getPath('userData'), '.copilot_token')
+    this.DEFAULT_HEADERS = {
+      accept: 'application/json',
+      'editor-version': 'Neovim/0.6.1',
+      'editor-plugin-version': 'copilot.vim/1.16.0',
+      'content-type': 'application/json',
+      'user-agent': 'GithubCopilot/1.155.0',
+      'accept-encoding': 'gzip,deflate,br'
+    }
+    this.getAuthMessage = this.getAuthMessage.bind(this)
+    this.getCopilotToken = this.getCopilotToken.bind(this)
+    this.saveCopilotToken = this.saveCopilotToken.bind(this)
+    this.getToken = this.getToken.bind(this)
+  }
+  /**
+   * 获取GitHub设备授权信息
+   */
+  public async getAuthMessage(): Promise<AuthResponse> {
+    try {
+      const response = await axios.post<AuthResponse>(
         'https://github.com/login/device/code',
         {
-          client_id: 'Iv1.b507a08c87ecfe98',
+          client_id: this.GITHUB_CLIENT_ID,
           scope: 'read:user'
         },
-        {
-          headers: {
-            accept: 'application/json',
-            'editor-version': 'Neovim/0.6.1',
-            'editor-plugin-version': 'copilot.vim/1.16.0',
-            'content-type': 'application/json',
-            'user-agent': 'GithubCopilot/1.155.0',
-            'accept-encoding': 'gzip,deflate,br'
-          }
-        }
+        { headers: this.DEFAULT_HEADERS }
       )
-      .then((resp) => resp.data)
-    console.log({ device_code, user_code, verification_uri })
-    return { device_code, user_code, verification_uri }
+
+      const { device_code, user_code, verification_uri } = response.data
+      console.log({ device_code, user_code, verification_uri })
+      return { device_code, user_code, verification_uri }
+    } catch (error) {
+      console.error('Failed to get auth message:', error)
+      throw new Error('无法获取GitHub授权信息')
+    }
   }
 
-  public getCopilotToken = async (
-    _: Electron.IpcMainInvokeEvent,
-    device_code: string
-  ): Promise<{ access_token: string }> => {
-    const maxAttempts = 12 // 1 minute total (5s * 12)
-    let attempts = 0
+  /**
+   * 使用设备码获取访问令牌
+   */
+  public async getCopilotToken(_: Electron.IpcMainInvokeEvent, device_code: string): Promise<TokenResponse> {
+    const maxAttempts = 120 // 2分钟总计 (1秒 * 120)
+    const pollingInterval = 1000 // 1秒
 
-    while (attempts < maxAttempts) {
-      await new Promise((resolve) => setTimeout(resolve, 5000))
+    for (let attempts = 0; attempts < maxAttempts; attempts++) {
+      await this.delay(pollingInterval)
+
       try {
-        const resp = await axios.post(
+        const response = await axios.post<TokenResponse>(
           'https://github.com/login/oauth/access_token',
           {
-            client_id: 'Iv1.b507a08c87ecfe98',
-            device_code: device_code,
+            client_id: this.GITHUB_CLIENT_ID,
+            device_code,
             grant_type: 'urn:ietf:params:oauth:grant-type:device_code'
           },
-          {
-            headers: {
-              accept: 'application/json',
-              'editor-version': 'Neovim/0.6.1',
-              'editor-plugin-version': 'copilot.vim/1.16.0',
-              'content-type': 'application/json',
-              'user-agent': 'GithubCopilot/1.155.0',
-              'accept-encoding': 'gzip,deflate,br'
-            }
-          }
+          { headers: this.DEFAULT_HEADERS }
         )
-        const access_token = resp.data.access_token
+
+        const { access_token } = response.data
         if (access_token) {
           return { access_token }
         }
       } catch (error) {
+        // 仅在最后一次尝试失败时记录错误
         if (attempts === maxAttempts - 1) {
-          throw new Error('Failed to get access token after multiple attempts')
+          console.error('Token polling failed:', error)
         }
       }
-      attempts++
     }
-    throw new Error('Timeout waiting for access token')
+
+    throw new Error('获取访问令牌超时，请重试')
   }
 
-  public saveCopilotToken = async (_: Electron.IpcMainInvokeEvent, token: string): Promise<void> => {
-    const copilotTokenPath = path.join(app.getPath('userData'), '.copilot_token')
-    await fs.promises.writeFile(copilotTokenPath, token)
-  }
-  public getToken = async (): Promise<{ token: string }> => {
-    const copilotTokenPath = path.join(app.getPath('userData'), '.copilot_token')
+  /**
+   * 保存Copilot令牌到本地文件
+   */
+  public async saveCopilotToken(_: Electron.IpcMainInvokeEvent, token: string): Promise<void> {
     try {
-      const access_token = await fs.promises.readFile(copilotTokenPath, 'utf-8')
-      const response = await axios.get('https://api.github.com/copilot_internal/v2/token', {
-        headers: {
-          authorization: `token ${access_token}`,
-          'editor-version': 'Neovim/0.6.1',
-          'editor-plugin-version': 'copilot.vim/1.16.0',
-          'user-agent': 'GithubCopilot/1.155.0'
-        }
-      })
-      const token = response.data.token
-      return { token }
-    } catch (e) {
-      throw new Error('Failed to get access token')
+      await fs.writeFile(this.TOKEN_FILE_PATH, token)
+    } catch (error) {
+      console.error('Failed to save token:', error)
+      throw new Error('无法保存访问令牌')
     }
   }
+
+  /**
+   * 从本地文件读取令牌并获取Copilot令牌
+   */
+  public async getToken(): Promise<CopilotTokenResponse> {
+    try {
+      const access_token = await fs.readFile(this.TOKEN_FILE_PATH, 'utf-8')
+
+      const config: AxiosRequestConfig = {
+        headers: {
+          ...this.DEFAULT_HEADERS,
+          authorization: `token ${access_token}`
+        }
+      }
+
+      const response = await axios.get<{ token: string }>('https://api.github.com/copilot_internal/v2/token', config)
+
+      return { token: response.data.token }
+    } catch (error) {
+      console.error('Failed to get Copilot token:', error)
+      throw new Error('无法获取Copilot令牌，请重新授权')
+    }
+  }
+
+  /**
+   * 辅助方法：延迟执行
+   */
+  private delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms))
+  }
 }
+
 export default new CopilotService()
