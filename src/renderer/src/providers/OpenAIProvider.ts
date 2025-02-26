@@ -37,7 +37,10 @@ export default class OpenAIProvider extends BaseProvider {
       dangerouslyAllowBrowser: true,
       apiKey: this.apiKey,
       baseURL: this.getBaseURL(),
-      defaultHeaders: this.defaultHeaders()
+      defaultHeaders: {
+        ...this.defaultHeaders(),
+        ...(this.provider.id === 'copilot' ? { 'editor-version': 'vscode/1.97.2' } : {})
+      }
     })
   }
 
@@ -241,7 +244,6 @@ export default class OpenAIProvider extends BaseProvider {
     const lastUserMessage = _messages.findLast((m) => m.role === 'user')
     const { abortController, cleanup } = this.createAbortController(lastUserMessage?.id)
     const { signal } = abortController
-
     const stream = await this.sdk.chat.completions
       // @ts-ignore key is not typed
       .create(
