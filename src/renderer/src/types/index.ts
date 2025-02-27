@@ -291,7 +291,9 @@ export type SidebarIcon = 'assistants' | 'agents' | 'paintings' | 'translate' | 
 export type WebSearchProvider = {
   id: string
   name: string
-  apiKey: string
+  apiKey?: string
+  apiHost?: string
+  engines?: string[]
 }
 
 export type KnowledgeReference = {
