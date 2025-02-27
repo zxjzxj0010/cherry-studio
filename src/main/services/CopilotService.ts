@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig } from 'axios'
-import { app } from 'electron'
+import { app, safeStorage } from 'electron'
 import fs from 'fs/promises'
 import path from 'path'
 
@@ -102,7 +102,8 @@ class CopilotService {
    */
   public async saveCopilotToken(_: Electron.IpcMainInvokeEvent, token: string): Promise<void> {
     try {
-      await fs.writeFile(this.TOKEN_FILE_PATH, token)
+      const encryptedToken = safeStorage.encryptString(token)
+      await fs.writeFile(this.TOKEN_FILE_PATH, encryptedToken)
     } catch (error) {
       console.error('Failed to save token:', error)
       throw new Error('无法保存访问令牌')
@@ -114,7 +115,8 @@ class CopilotService {
    */
   public async getToken(): Promise<CopilotTokenResponse> {
     try {
-      const access_token = await fs.readFile(this.TOKEN_FILE_PATH, 'utf-8')
+      const encryptedToken = await fs.readFile(this.TOKEN_FILE_PATH)
+      const access_token = safeStorage.decryptString(Buffer.from(encryptedToken))
 
       const config: AxiosRequestConfig = {
         headers: {
