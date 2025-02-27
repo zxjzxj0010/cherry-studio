@@ -3,10 +3,10 @@ import tavilyLogoDark from '@renderer/assets/images/search/tavily-dark.svg'
 import { HStack } from '@renderer/components/Layout'
 import { useTheme } from '@renderer/context/ThemeProvider'
 import { useWebSearchProvider } from '@renderer/hooks/useWebSearchProviders'
+import WebSearchService from '@renderer/services/WebSearchService'
 import { useAppDispatch, useAppSelector } from '@renderer/store'
 import { setExcludeDomains, setMaxResult, setSearchWithTime } from '@renderer/store/websearch'
 import { formatDomains } from '@renderer/utils/blacklist'
-import SearxngProvider from '@renderer/webSearchProvider/SearxngProvider'
 import { Alert, Button, Input, Slider, Switch, Typography } from 'antd'
 import TextArea from 'antd/es/input/TextArea'
 import { FC, useEffect, useState } from 'react'
@@ -36,6 +36,7 @@ const WebSearchSettings: FC = () => {
   const excludeDomains = useAppSelector((state) => state.websearch.excludeDomains)
   const [errFormat, setErrFormat] = useState(false)
   const [blacklistInput, setBlacklistInput] = useState('')
+  const { provider: searxngProvider } = useWebSearchProvider('searxng')
 
   const dispatch = useAppDispatch()
 
@@ -62,7 +63,9 @@ const WebSearchSettings: FC = () => {
   }
 
   async function search() {
-    await SearxngProvider.engines()
+    await WebSearchService.search(provider, 'Cherry Studio')
+    await WebSearchService.search(searxngProvider, 'Cherry Studio')
+
     // await SearxngProvider.search('Cherry Studio')
   }
   return (

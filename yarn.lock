@@ -43,6 +43,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@agentic/tavily@npm:^7.3.3":
+  version: 7.3.3
+  resolution: "@agentic/tavily@npm:7.3.3"
+  dependencies:
+    "@agentic/core": "npm:7.3.3"
+    ky: "npm:^1.7.5"
+    p-throttle: "npm:^6.2.0"
+  peerDependencies:
+    zod: ^3.24.2
+  checksum: 10c0/604e9a1a15cd8a6b70754dcc919c843988376d7ed65f83ba24d8add7c8febfae782184cf804611d5baacc5249d50ac8e19fa85390d8a40086c52c352a9bbb87d
+  languageName: node
+  linkType: hard
+
 "@ampproject/remapping@npm:^2.2.0":
   version: 2.3.0
   resolution: "@ampproject/remapping@npm:2.3.0"
@@ -3028,6 +3041,7 @@ __metadata:
   resolution: "CherryStudio@workspace:."
   dependencies:
     "@agentic/searxng": "npm:^7.3.3"
+    "@agentic/tavily": "npm:^7.3.3"
     "@anthropic-ai/sdk": "npm:^0.24.3"
     "@electron-toolkit/eslint-config-prettier": "npm:^2.0.0"
     "@electron-toolkit/eslint-config-ts": "npm:^1.0.1"

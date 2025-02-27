@@ -15,7 +15,8 @@ export default class SearxngProvider extends BaseWebSearchProvider {
       engines: ['google', 'bing', 'duckduckgo'],
       language: 'auto'
     })
-    console.log(res)
+    console.log('searxng', res)
+    return 'searxng'
   }
   public async engines() {
     const response = await axios
