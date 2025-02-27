@@ -1,6 +1,5 @@
-import tavilyLogo from '@renderer/assets/images/search/tavily.svg'
-import tavilyLogoDark from '@renderer/assets/images/search/tavily-dark.svg'
 import { HStack } from '@renderer/components/Layout'
+import { getWebSearchProviderLogo } from '@renderer/config/webSearchProviders'
 import { useTheme } from '@renderer/context/ThemeProvider'
 import { useWebSearchProvider } from '@renderer/hooks/useWebSearchProviders'
 import WebSearchService from '@renderer/services/WebSearchService'
@@ -30,7 +29,7 @@ const WebSearchSettings: FC = () => {
   const { theme } = useTheme()
   const { provider, updateProvider } = useWebSearchProvider('tavily')
   const [apiKey, setApiKey] = useState(provider.apiKey)
-  const logo = theme === 'dark' ? tavilyLogoDark : tavilyLogo
+  const providerId = theme === 'dark' ? 'tavily-dark' : 'tavily'
   const searchWithTime = useAppSelector((state) => state.websearch.searchWithTime)
   const maxResults = useAppSelector((state) => state.websearch.maxResults)
   const excludeDomains = useAppSelector((state) => state.websearch.excludeDomains)
@@ -65,14 +64,12 @@ const WebSearchSettings: FC = () => {
   async function search() {
     await WebSearchService.search(provider, 'Cherry Studio')
     await WebSearchService.search(searxngProvider, 'Cherry Studio')
-
-    // await SearxngProvider.search('Cherry Studio')
   }
   return (
     <SettingContainer theme={theme}>
       <SettingGroup theme={theme}>
         <HStack alignItems="center" gap={10}>
-          <TavilyLogo src={logo} alt="web-search" style={{ width: '60px' }} />
+          <TavilyLogo src={getWebSearchProviderLogo(providerId)} alt="web-search" style={{ width: '60px' }} />
         </HStack>
         <SettingDivider />
         <Paragraph type="secondary" style={{ margin: '10px 0' }}>
