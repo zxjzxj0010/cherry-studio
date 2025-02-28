@@ -53,7 +53,6 @@ class CopilotService {
       )
 
       const { device_code, user_code, verification_uri } = response.data
-      console.log({ device_code, user_code, verification_uri })
       return { device_code, user_code, verification_uri }
     } catch (error) {
       console.error('Failed to get auth message:', error)
