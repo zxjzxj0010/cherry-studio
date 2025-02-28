@@ -1,3 +1,4 @@
+import { CheckOutlined, InfoCircleOutlined, LoadingOutlined } from '@ant-design/icons'
 import { useTheme } from '@renderer/context/ThemeProvider'
 import { useDefaultWebSearchProvider, useWebSearchProviders } from '@renderer/hooks/useWebSearchProviders'
 import WebSearchService from '@renderer/services/WebSearchService'
@@ -15,11 +16,16 @@ const BasicSettings: FC = () => {
   const { theme } = useTheme()
   const { providers } = useWebSearchProviders()
   const { provider: defaultProvider, setDefaultProvider } = useDefaultWebSearchProvider()
+  const [selectedProviderId, setSelectedProviderId] = useState<string>('') // 初始值为空字符串
+
   const searchWithTime = useAppSelector((state) => state.websearch.searchWithTime)
   const maxResults = useAppSelector((state) => state.websearch.maxResults)
   const excludeDomains = useAppSelector((state) => state.websearch.excludeDomains)
   const [errFormat, setErrFormat] = useState(false)
   const [blacklistInput, setBlacklistInput] = useState('')
+  const [apiChecking, setApiChecking] = useState(false)
+  const [apiValid, setApiValid] = useState(false)
+
   const dispatch = useAppDispatch()
 
   useEffect(() => {
@@ -27,6 +33,17 @@ const BasicSettings: FC = () => {
       setBlacklistInput(excludeDomains.join('\n'))
     }
   }, [excludeDomains])
+
+  // 添加一个 useEffect 来监听 defaultProvider 的变化
+  useEffect(() => {
+    console.log('defaultProvider:', defaultProvider)
+    if (defaultProvider && defaultProvider.id && defaultProvider.enabled) {
+      setSelectedProviderId(defaultProvider.id)
+    } else {
+      setSelectedProviderId('') // 如果没有默认提供商，保持为空
+    }
+  }, [defaultProvider])
+
   function updateManualBlacklist(blacklist: string) {
     const blacklistDomains = blacklist.split('\n').filter((url) => url.trim() !== '')
     const { formattedDomains, hasError } = formatDomains(blacklistDomains)
@@ -34,15 +51,43 @@ const BasicSettings: FC = () => {
     if (hasError) return
     dispatch(setExcludeDomains(formattedDomains))
   }
+
   function updateSelectedWebSearchProvider(providerId: string) {
+    setApiValid(false)
+    if (!providerId) {
+      setSelectedProviderId('')
+      return
+    }
+
     const provider = providers.find((p) => p.id === providerId)
     if (!provider) {
       throw new Error(`Web search provider with id ${providerId} not found`)
     }
-    setDefaultProvider(provider)
+
+    setSelectedProviderId(providerId)
+    setDefaultProvider(provider) // 这会将选择保存到Redux状态中
   }
-  async function searchTest() {
-    await WebSearchService.search(defaultProvider, 'Cherry Studio')
+  async function checkSearch() {
+    setApiChecking(true)
+    if (selectedProviderId) {
+      const provider = providers.find((p) => p.id === selectedProviderId)
+      if (!provider) {
+        setApiChecking(false)
+        setApiValid(false)
+        return
+      }
+      const valid = await WebSearchService.checkSearch(provider)
+      setApiValid(valid)
+    } else {
+      window.message.info({
+        content: t('settings.websearch.no_provider_selected'),
+        duration: 4,
+        icon: <InfoCircleOutlined />,
+        key: 'quick-assistant-info'
+      })
+      setApiValid(false)
+    }
+    setApiChecking(false)
   }
 
   return (
@@ -52,13 +97,21 @@ const BasicSettings: FC = () => {
         <SettingDivider />
         <SettingRow>
           <SettingRowTitle>{t('settings.websearch.search_provider')}</SettingRowTitle>
-          <Select
-            value={defaultProvider.id}
-            style={{ width: '200px' }}
-            onChange={(value) => updateSelectedWebSearchProvider(value)}
-            placeholder={t('settings.websearch.search_provider_placeholder')}
-            options={providers.filter((p) => p.enabled === true).map((p) => ({ value: p.id, label: p.name }))}
-          />
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <Select
+              value={selectedProviderId || undefined}
+              style={{ width: '200px' }}
+              onChange={(value: string) => updateSelectedWebSearchProvider(value)}
+              placeholder={t('settings.websearch.search_provider_placeholder')}
+              options={providers.filter((p) => p.enabled === true).map((p) => ({ value: p.id, label: p.name }))}
+            />
+            <Button
+              type={apiValid ? 'primary' : 'default'}
+              onClick={async () => await checkSearch()}
+              disabled={apiChecking}>
+              {apiChecking ? <LoadingOutlined spin /> : apiValid ? <CheckOutlined /> : t('settings.websearch.check')}
+            </Button>
+          </div>
         </SettingRow>
         <SettingDivider />
         <SettingRow>
@@ -94,9 +147,6 @@ const BasicSettings: FC = () => {
           rows={4}
         />
         {errFormat && <Alert message={t('settings.websearch.blacklist_tooltip')} type="error" />}
-      </SettingGroup>
-      <SettingGroup theme={theme}>
-        <Button onClick={async () => await searchTest()}>test</Button>
       </SettingGroup>
     </SettingContainer>
   )

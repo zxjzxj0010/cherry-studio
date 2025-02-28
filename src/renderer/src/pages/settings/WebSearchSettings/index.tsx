@@ -6,19 +6,18 @@ import { useWebSearchProviders } from '@renderer/hooks/useWebSearchProviders'
 import { WebSearchProvider } from '@renderer/types'
 import { droppableReorder } from '@renderer/utils'
 import { Avatar, Tag } from 'antd'
-import { FC, useEffect, useState } from 'react'
+import { FC, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
 import BasicSettings from './BasicSettings'
 import WebSearchProviderSetting from './WebSearchProviderSetting'
 
-const WebSearchProviderList: FC = () => {
+const WebSearchSettings: FC = () => {
   const { providers, updateWebSearchProviders } = useWebSearchProviders()
-  console.log(providers)
+  console.log('providers', providers)
   const { t } = useTranslation()
   const [selectedProvider, setSelectedProvider] = useState<WebSearchProvider | null>(null)
-  // 添加一个状态来控制当前显示的视图类型
   const [viewType, setViewType] = useState<'basic' | 'provider'>('basic')
 
   const [, setDragging] = useState(false)
@@ -32,10 +31,6 @@ const WebSearchProviderList: FC = () => {
       updateWebSearchProviders(reorderProviders)
     }
   }
-
-  useEffect(() => {
-    console.log(selectedProvider)
-  }, [selectedProvider])
 
   const handleBasicClick = () => {
     setViewType('basic')
@@ -160,4 +155,4 @@ const ProviderItemName = styled.div`
   font-family: Ubuntu;
 `
 
-export default WebSearchProviderList
+export default WebSearchSettings

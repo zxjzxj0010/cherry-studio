@@ -1,8 +1,10 @@
+import { ExportOutlined } from '@ant-design/icons'
 import { WEB_SEARCH_PROVIDER_CONFIG } from '@renderer/config/webSearchProviders'
 import { useTheme } from '@renderer/context/ThemeProvider'
 import { useWebSearchProvider } from '@renderer/hooks/useWebSearchProviders'
 import { WebSearchProvider } from '@renderer/types'
 import { Divider, Flex, Input, Switch } from 'antd'
+import Link from 'antd/es/typography/Link'
 import { FC, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
@@ -21,7 +23,7 @@ const WebSearchProviderSetting: FC<Props> = ({ provider: _provider }) => {
 
   const webSearchProviderConfig = WEB_SEARCH_PROVIDER_CONFIG[provider.id]
   const apiKeyWebsite = webSearchProviderConfig?.websites?.apiKey
-
+  const officialWebsite = webSearchProviderConfig?.websites?.official
   const onUpdateApiKey = () => {
     if (apiKey !== provider.apiKey) {
       updateProvider({ ...provider, apiKey })
@@ -37,8 +39,6 @@ const WebSearchProviderSetting: FC<Props> = ({ provider: _provider }) => {
   }
 
   useEffect(() => {
-    console.log('provider.apiKey:', provider.apiKey)
-    console.log('provider.apiHost:', provider.apiHost)
     if (provider.apiKey !== undefined) {
       setApiKey(provider.apiKey)
     }
@@ -52,6 +52,11 @@ const WebSearchProviderSetting: FC<Props> = ({ provider: _provider }) => {
       <SettingTitle>
         <Flex align="center" gap={8}>
           <ProviderName> {provider.name}</ProviderName>
+          {officialWebsite! && (
+            <Link target="_blank" href={webSearchProviderConfig.websites.official}>
+              <ExportOutlined style={{ color: 'var(--color-text)', fontSize: '12px' }} />
+            </Link>
+          )}
         </Flex>
         <Switch
           value={provider.enabled}

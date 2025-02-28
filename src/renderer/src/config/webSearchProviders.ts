@@ -18,7 +18,13 @@ export function getWebSearchProviderLogo(providerId: string) {
 export const WEB_SEARCH_PROVIDER_CONFIG = {
   tavily: {
     websites: {
+      official: 'https://tavily.com',
       apiKey: 'https://app.tavily.com/home'
+    }
+  },
+  searxng: {
+    websites: {
+      official: 'https://docs.searxng.org'
     }
   }
 }

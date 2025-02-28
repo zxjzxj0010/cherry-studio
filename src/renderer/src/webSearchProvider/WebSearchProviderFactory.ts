@@ -1,6 +1,7 @@
 import { WebSearchProvider } from '@renderer/types'
 
 import BaseWebSearchProvider from './BaseWebSearchProvider'
+import DefaultProvider from './DefaultProvider'
 import SearxngProvider from './SearxngProvider'
 import TavilyProvider from './TavilyProvider'
 
@@ -12,7 +13,7 @@ export default class WebSearchProviderFactory {
       case 'searxng':
         return new SearxngProvider(provider)
       default:
-        return new SearxngProvider(provider)
+        return new DefaultProvider(provider)
     }
   }
 }

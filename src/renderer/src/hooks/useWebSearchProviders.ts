@@ -9,12 +9,8 @@ import { WebSearchProvider } from '@renderer/types'
 export const useDefaultWebSearchProvider = () => {
   const defaultProvider = useAppSelector((state) => state.websearch.defaultProvider)
   const { providers } = useWebSearchProviders()
-  const provider = providers.find((provider) => provider.id === defaultProvider)
+  const provider = defaultProvider ? providers.find((provider) => provider.id === defaultProvider) : undefined
   const dispatch = useAppDispatch()
-
-  if (!provider) {
-    throw new Error(`Web search provider with id ${defaultProvider} not found`)
-  }
 
   const setDefaultProvider = (provider: WebSearchProvider) => {
     dispatch(_setDefaultProvider(provider.id))
