@@ -1195,6 +1195,16 @@ const migrateConfig = {
             models: SYSTEM_MODELS.copilot,
             isSystem: true,
             enabled: false
+          },
+          {
+            id: 'xirang',
+            name: 'Xirang',
+            type: 'openai',
+            apiKey: '',
+            apiHost: 'https://wishub-x1.ctyun.cn',
+            models: SYSTEM_MODELS.xirang,
+            isSystem: true,
+            enabled: false
           }
         ]
       }

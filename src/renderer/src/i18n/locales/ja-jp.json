@@ -473,7 +473,8 @@
         "vision": "画像"
       },
       "vision": "画像",
-      "websearch": "ウェブ検索"
+      "websearch": "ウェブ検索",
+      "edit": "モデルを編集"
     },
     "ollama": {
       "keep_alive_time.description": "モデルがメモリに保持される時間（デフォルト：5分）",
@@ -561,6 +562,7 @@
       "zhinao": "360智脳",
       "zhipu": "智譜AI",
       "copilot": "GitHub Copilot"
+      "xirang": "天翼クラウド 息壤"
     },
     "settings": {
       "about": "について",
@@ -802,7 +804,6 @@
       },
       "shortcuts": {
         "action": "操作",
-        "alt_warning": "MacではOptionキーとの組み合わせは、スペースキーのみ使用可能です",
         "clear_shortcut": "ショートカットをクリア",
         "clear_topic": "メッセージを消去",
         "copy_last_message": "最後のメッセージをコピー",

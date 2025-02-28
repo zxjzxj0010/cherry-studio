@@ -472,7 +472,8 @@
         "vision": "Изображение"
       },
       "vision": "Визуальные",
-      "websearch": "Веб-поисковые"
+      "websearch": "Веб-поисковые",
+      "edit": "Редактировать модель"
     },
     "ollama": {
       "keep_alive_time.description": "Время в минутах, в течение которого модель остается активной, по умолчанию 5 минут.",
@@ -560,6 +561,7 @@
       "zhinao": "360AI",
       "zhipu": "ZHIPU AI",
       "copilot": "GitHub Copilot"
+      "xirang": "State Cloud Xirang"
     },
     "settings": {
       "about": "О программе и обратная связь",
@@ -801,7 +803,6 @@
       },
       "shortcuts": {
         "action": "Действие",
-        "alt_warning": "В Mac сочетания с клавишей Option работают только с пробелом",
         "clear_shortcut": "Очистить сочетание клавиш",
         "clear_topic": "Очистить все сообщения",
         "copy_last_message": "Копировать последнее сообщение",
