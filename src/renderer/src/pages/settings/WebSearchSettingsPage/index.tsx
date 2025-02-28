@@ -5,7 +5,7 @@ import { getWebSearchProviderLogo } from '@renderer/config/webSearchProviders'
 import { useWebSearchProviders } from '@renderer/hooks/useWebSearchProviders'
 import { WebSearchProvider } from '@renderer/types'
 import { droppableReorder } from '@renderer/utils'
-import { Avatar } from 'antd'
+import { Avatar, Tag } from 'antd'
 import { FC, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
@@ -79,6 +79,11 @@ const WebSearchProviderList: FC = () => {
                               onClick={() => handleProviderClick(provider)}>
                               <ProviderLogo shape="square" src={getWebSearchProviderLogo(provider.id)} size={25} />
                               <ProviderItemName className="text-nowrap">{provider.name}</ProviderItemName>
+                              {provider.enabled && (
+                                <Tag color="green" style={{ marginLeft: 'auto', marginRight: 0, borderRadius: 16 }}>
+                                  ON
+                                </Tag>
+                              )}
                             </ProviderListItem>
                           </div>
                         )}

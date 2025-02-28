@@ -1,9 +1,10 @@
 import { useTheme } from '@renderer/context/ThemeProvider'
 import { useDefaultWebSearchProvider, useWebSearchProviders } from '@renderer/hooks/useWebSearchProviders'
+import WebSearchService from '@renderer/services/WebSearchService'
 import { useAppDispatch, useAppSelector } from '@renderer/store'
 import { setExcludeDomains, setMaxResult, setSearchWithTime } from '@renderer/store/websearch'
 import { formatDomains } from '@renderer/utils/blacklist'
-import { Alert, Select, Slider, Switch } from 'antd'
+import { Alert, Button, Select, Slider, Switch } from 'antd'
 import TextArea from 'antd/es/input/TextArea'
 import { t } from 'i18next'
 import { FC, useEffect, useState } from 'react'
@@ -40,6 +41,9 @@ const BasicSettings: FC = () => {
     }
     setDefaultProvider(provider)
   }
+  async function searchTest() {
+    await WebSearchService.search(defaultProvider, 'Cherry Studio')
+  }
 
   return (
     <SettingContainer theme={theme}>
@@ -53,7 +57,7 @@ const BasicSettings: FC = () => {
             style={{ width: '200px' }}
             onChange={(value) => updateSelectedWebSearchProvider(value)}
             placeholder={t('settings.websearch.search_provider_placeholder')}
-            options={providers.map((p) => ({ value: p.id, label: p.name }))}
+            options={providers.filter((p) => p.enabled === true).map((p) => ({ value: p.id, label: p.name }))}
           />
         </SettingRow>
         <SettingDivider />
@@ -90,6 +94,9 @@ const BasicSettings: FC = () => {
           rows={4}
         />
         {errFormat && <Alert message={t('settings.websearch.blacklist_tooltip')} type="error" />}
+      </SettingGroup>
+      <SettingGroup theme={theme}>
+        <Button onClick={async () => await searchTest()}>test</Button>
       </SettingGroup>
     </SettingContainer>
   )

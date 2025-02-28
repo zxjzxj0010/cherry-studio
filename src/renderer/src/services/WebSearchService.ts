@@ -8,7 +8,7 @@ class WebSearchService {
     const defaultProvider = store.getState().websearch.defaultProvider
     const providers = store.getState().websearch.providers
     const provider = providers.find((provider) => provider.id === defaultProvider)
-    return provider?.apiKey ? true : false
+    return provider?.enabled ?? false
   }
 
   public getWebSearchProvider(): WebSearchProvider {

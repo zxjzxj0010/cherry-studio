@@ -2,7 +2,7 @@ import { WEB_SEARCH_PROVIDER_CONFIG } from '@renderer/config/webSearchProviders'
 import { useTheme } from '@renderer/context/ThemeProvider'
 import { useWebSearchProvider } from '@renderer/hooks/useWebSearchProviders'
 import { WebSearchProvider } from '@renderer/types'
-import { Divider, Flex, Input } from 'antd'
+import { Divider, Flex, Input, Switch } from 'antd'
 import { FC, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
@@ -53,6 +53,16 @@ const WebSearchProviderSetting: FC<Props> = ({ provider: _provider }) => {
         <Flex align="center" gap={8}>
           <ProviderName> {provider.name}</ProviderName>
         </Flex>
+        <Switch
+          value={provider.enabled}
+          key={provider.id}
+          onChange={(enabled) => {
+            const updatedProvider = { ...provider, enabled }
+            if (apiKey !== undefined) updatedProvider.apiKey = apiKey
+            if (apiHost !== undefined) updatedProvider.apiHost = apiHost
+            updateProvider(updatedProvider)
+          }}
+        />
       </SettingTitle>
       <Divider style={{ width: '100%', margin: '10px 0' }} />
       {provider.apiKey !== undefined && (

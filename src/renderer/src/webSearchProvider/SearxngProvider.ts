@@ -1,5 +1,5 @@
 import { SearxngClient } from '@agentic/searxng'
-import { WebSearchProvider } from '@renderer/types'
+import { WebSearchProvider, WebSearchResponse } from '@renderer/types'
 import axios from 'axios'
 
 import BaseWebSearchProvider from './BaseWebSearchProvider'
@@ -9,14 +9,22 @@ export default class SearxngProvider extends BaseWebSearchProvider {
     super(provider)
     this.searxng = new SearxngClient({ apiBaseUrl: 'http://0.0.0.0:8080' })
   }
-  public async search(query: string) {
-    const res = await this.searxng.search({
+  public async search(query: string, maxResults: number): Promise<WebSearchResponse> {
+    const result = await this.searxng.search({
       query: query,
       engines: ['google', 'bing', 'duckduckgo'],
       language: 'auto'
     })
-    console.log('searxng', res)
-    return 'searxng'
+    return {
+      query: result.query,
+      results: result.results.slice(0, maxResults).map((result) => {
+        return {
+          title: result.title,
+          content: result.content || '',
+          url: result.url
+        }
+      })
+    }
   }
   public async engines() {
     const response = await axios
