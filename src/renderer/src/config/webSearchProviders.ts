@@ -14,3 +14,11 @@ export function getWebSearchProviderLogo(providerId: string) {
       return undefined
   }
 }
+
+export const WEB_SEARCH_PROVIDER_CONFIG = {
+  tavily: {
+    websites: {
+      apiKey: 'https://app.tavily.com/home'
+    }
+  }
+}

@@ -828,6 +828,8 @@
         "search_max_result": "搜索结果个数",
         "search_result_default": "默认",
         "search_with_time": "搜索包含日期",
+        "search_provider":"搜索服务商",
+        "search_provider_placeholder": "选择一个搜索服务商",
         "tavily": {
           "api_key": "Tavily API 密钥",
           "api_key.placeholder": "请输入 Tavily API 密钥",
