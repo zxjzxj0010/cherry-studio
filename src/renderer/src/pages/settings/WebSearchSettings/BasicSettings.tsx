@@ -4,7 +4,7 @@ import { useDefaultWebSearchProvider, useWebSearchProviders } from '@renderer/ho
 import WebSearchService from '@renderer/services/WebSearchService'
 import { useAppDispatch, useAppSelector } from '@renderer/store'
 import { setExcludeDomains, setMaxResult, setSearchWithTime } from '@renderer/store/websearch'
-import { formatDomains } from '@renderer/utils/blacklist'
+import { parseMatchPattern } from '@renderer/utils/blacklistMatchPattern'
 import { Alert, Button, Select, Slider, Switch } from 'antd'
 import TextArea from 'antd/es/input/TextArea'
 import { t } from 'i18next'
@@ -46,10 +46,21 @@ const BasicSettings: FC = () => {
 
   function updateManualBlacklist(blacklist: string) {
     const blacklistDomains = blacklist.split('\n').filter((url) => url.trim() !== '')
-    const { formattedDomains, hasError } = formatDomains(blacklistDomains)
+
+    const validDomains: string[] = []
+    const hasError = blacklistDomains.some((domain) => {
+      const parsed = parseMatchPattern(domain.trim())
+      if (parsed === null) {
+        return true // 有错误
+      }
+      validDomains.push(domain.trim())
+      return false
+    })
+
     setErrFormat(hasError)
     if (hasError) return
-    dispatch(setExcludeDomains(formattedDomains))
+
+    dispatch(setExcludeDomains(validDomains))
   }
 
   function updateSelectedWebSearchProvider(providerId: string) {

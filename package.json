@@ -45,7 +45,8 @@
     "generate:icons": "electron-icon-builder --input=./build/logo.png --output=build",
     "analyze:renderer": "VISUALIZER_RENDERER=true yarn build",
     "analyze:main": "VISUALIZER_MAIN=true yarn build",
-    "check": "node scripts/check-i18n.js"
+    "check": "node scripts/check-i18n.js",
+    "test": "tsx --test src/**/*.test.ts"
   },
   "dependencies": {
     "@agentic/searxng": "^7.3.3",
