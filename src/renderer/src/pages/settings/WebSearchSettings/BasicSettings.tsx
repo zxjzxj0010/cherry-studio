@@ -152,11 +152,13 @@ const BasicSettings: FC = () => {
         <TextArea
           value={blacklistInput}
           onChange={(e) => setBlacklistInput(e.target.value)}
-          onBlur={() => updateManualBlacklist(blacklistInput)}
           placeholder={t('settings.websearch.blacklist_tooltip')}
-          autoSize={{ minRows: 2, maxRows: 6 }}
+          autoSize={{ minRows: 4, maxRows: 8 }}
           rows={4}
         />
+        <Button onClick={() => updateManualBlacklist(blacklistInput)} style={{ marginTop: 10 }}>
+          {t('common.save')}
+        </Button>
         {errFormat && <Alert message={t('settings.websearch.blacklist_tooltip')} type="error" />}
       </SettingGroup>
     </SettingContainer>
