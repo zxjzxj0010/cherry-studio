@@ -96,25 +96,21 @@ class KnowledgeService {
     if (item.type === 'directory') {
       const directory = item.content as string
       const directoryId = `DirectoryLoader_${uuidv4()}`
-      // 先添加目录本身
       const dirMtime = fs.statSync(directory).mtime
       console.log('[KnowledgeService] add directory', directoryId)
-      KnowledgeWatchService.knowledgeWatchService.add(item.type, directory, directoryId, dirMtime.toISOString())
+      if (base.autoUpdate) {
+        KnowledgeWatchService.knowledgeWatchService.add(item.type, directory, directoryId, dirMtime.toISOString())
+      }
       const files = getAllFiles(directory)
       const totalFiles = files.length
       let processedFiles = 0
       const loaderPromises = files.map(async (file) => {
         const result = await addFileLoader(ragApplication, file, base, forceReload)
         const uniqueId = result.uniqueId || path.basename(file.path)
-        const fileMtime = fs.statSync(file.path).mtime
-        KnowledgeWatchService.knowledgeWatchService.add(
-          'file',
-          file.path,
-          uniqueId,
-          fileMtime.toISOString(),
-          directoryId
-        )
-
+        if (base.autoUpdate) {
+          const fileMtime = fs.statSync(file.path).mtime.toISOString()
+          KnowledgeWatchService.knowledgeWatchService.add('file', file.path, uniqueId, fileMtime, directoryId)
+        }
         processedFiles++
         sendDirectoryProcessingPercent(totalFiles, processedFiles)
         return result
@@ -180,9 +176,11 @@ class KnowledgeService {
 
     if (item.type === 'file') {
       const file = item.content as FileType
-      const fileMtime = fs.statSync(file.path).mtime
       const result = await addFileLoader(ragApplication, file, base, forceReload)
-      KnowledgeWatchService.knowledgeWatchService.add(item.type, file.path, result.uniqueId, fileMtime.toISOString())
+      if (base.autoUpdate) {
+        const fileMtime = fs.statSync(file.path).mtime.toISOString()
+        KnowledgeWatchService.knowledgeWatchService.add(item.type, file.path, result.uniqueId, fileMtime)
+      }
       return result
     }
 

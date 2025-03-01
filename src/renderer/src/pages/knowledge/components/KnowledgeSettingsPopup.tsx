@@ -7,7 +7,7 @@ import { useKnowledge } from '@renderer/hooks/useKnowledge'
 import { useProviders } from '@renderer/hooks/useProvider'
 import { getModelUniqId } from '@renderer/services/ModelService'
 import { KnowledgeBase } from '@renderer/types'
-import { Alert, Form, Input, InputNumber, Modal, Select, Slider } from 'antd'
+import { Alert, Form, Input, InputNumber, Modal, Select, Slider, Switch } from 'antd'
 import { sortBy } from 'lodash'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -23,6 +23,7 @@ interface FormData {
   chunkSize?: number
   chunkOverlap?: number
   threshold?: number
+  autoUpdate: boolean
 }
 
 interface Props extends ShowParams {
@@ -68,7 +69,8 @@ const PopupContainer: React.FC<Props> = ({ base: _base, resolve }) => {
         documentCount: values.documentCount || DEFAULT_KNOWLEDGE_DOCUMENT_COUNT,
         chunkSize: values.chunkSize,
         chunkOverlap: values.chunkOverlap,
-        threshold: values.threshold ?? undefined
+        threshold: values.threshold ?? undefined,
+        autoUpdate: values.autoUpdate ?? false
       }
       updateKnowledgeBase(newBase)
       setOpen(false)
@@ -106,7 +108,13 @@ const PopupContainer: React.FC<Props> = ({ base: _base, resolve }) => {
           rules={[{ required: true, message: t('message.error.enter.name') }]}>
           <Input placeholder={t('common.name')} />
         </Form.Item>
-
+        <Form.Item
+          name="autoUpdate"
+          label={t('knowledge.auto_update')}
+          initialValue={base.autoUpdate}
+          tooltip={t('knowledge.auto_update_tooltip')}>
+          <Switch defaultChecked={false} />
+        </Form.Item>
         <Form.Item
           name="model"
           label={t('models.embedding_model')}
