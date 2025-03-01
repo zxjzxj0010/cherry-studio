@@ -192,6 +192,7 @@ const ProviderSetting: FC<Props> = ({ provider: _provider }) => {
   const { defaultModel, setDefaultModel } = useDefaultModel()
 
   const modelGroups = groupBy(models, 'group')
+  console.log('modelGroups', modelGroups)
   const isAzureOpenAI = provider.id === 'azure-openai' || provider.type === 'azure-openai'
 
   const providerConfig = PROVIDER_CONFIG[provider.id]
