@@ -41,6 +41,9 @@ class KnowledgeWatchService {
 
   private loadConfig() {
     const storageDir = path.join(app.getPath('userData'), 'Data', 'Files')
+    if (!fs.existsSync(storageDir)) {
+      fs.mkdirSync(storageDir, { recursive: true })
+    }
     const knowledgeWatcherPath = path.join(storageDir, 'KnowledgeWatcher.json')
     if (!fs.existsSync(knowledgeWatcherPath)) {
       fs.writeFileSync(knowledgeWatcherPath, JSON.stringify({ monitored_files: {} }, null, 2))
