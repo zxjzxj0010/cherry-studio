@@ -321,7 +321,7 @@
       "edit_remark": "修改备注",
       "edit_remark_placeholder": "请输入备注内容",
       "auto_update": "自动更新",
-      "auto_update_tooltip": "开启自动更新后，文件修改会导致知识库重新索引，请注意token消耗!"
+      "auto_update_tooltip": "[风险警告]开启自动更新后，文件修改会导致知识库重新索引，请注意token消耗!"
     },
     "languages": {
       "arabic": "阿拉伯文",
@@ -607,27 +607,14 @@
         "notion.help": "Notion 配置文档",
         "notion.check": {
           "button": "检查",
-          "empty_api_key": "未配置Api_key",
-          "empty_database_id": "未配置Database_id",
-          "error": "连接异常，请检查网络及Api_key和Database_id是否正确",
-          "fail": "连接失败，请检查网络及Api_key和Database_id是否正确",
-          "success": "连接成功"
-        },
-        "notion.database_id": "Notion 数据库 ID",
-        "notion.database_id_placeholder": "请输入Notion 数据库 ID",
-        "notion.help": "Notion 配置文档",
-        "notion.page_name_key": "页面标题字段名",
-        "notion.page_name_key_placeholder": "请输入页面标题字段名，默认为 Name",
-        "notion.title": "Notion 配置",
-        "notion.help": "Notion 配置文档",
-        "notion.check": {
-          "button": "检查",
           "fail": "连接失败，请检查网络及Api_key和Database_id是否正确",
           "success": "连接成功",
           "error": "连接异常，请检查网络及Api_key和Database_id是否正确",
           "empty_api_key": "未配置Api_key",
           "empty_database_id": "未配置Database_id"
         },
+        "notion.page_name_key": "页面标题字段名",
+        "notion.page_name_key_placeholder": "请输入页面标题字段名，默认为 Name",
         "notion.auto_split_tip": "当要导出的话题过长时自动分页导出到Notion",
         "notion.auto_split": "导出对话时自动分页",
         "notion.split_size": "自动分页大小",

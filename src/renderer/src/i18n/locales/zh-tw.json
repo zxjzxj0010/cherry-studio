@@ -318,7 +318,10 @@
       "url_placeholder": "請輸入網址, 多個網址用回車分隔",
       "urls": "網址",
       "edit_remark": "修改備註",
-      "edit_remark_placeholder": "請輸入備註內容"
+      "edit_remark_placeholder": "請輸入備註內容",
+      "file_or_directory_changed": "檢測到知識庫檔案/文件夾修改",
+      "auto_update": "自動更新",
+      "auto_update_tooltip": "[風險警告]開啟自動更新後，文件修改會導致知識庫重新索引，請注意token消耗!"
     },
     "languages": {
       "arabic": "阿拉伯文",
