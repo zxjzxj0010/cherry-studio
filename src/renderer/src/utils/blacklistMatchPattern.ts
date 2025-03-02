@@ -170,3 +170,31 @@ function testPath(pathPattern: string, path: string): boolean {
   }
   return path.slice(pos).endsWith(rest[rest.length - 1])
 }
+
+export // 添加新的解析函数
+async function parseSubscribeContent(url: string): Promise<string[]> {
+  try {
+    // 获取订阅源内容
+    const response = await fetch(url)
+    console.log('response', response)
+    if (!response.ok) {
+      throw new Error('Failed to fetch subscribe content')
+    }
+
+    const content = await response.text()
+
+    // 按行分割内容
+    const lines = content.split('\n')
+
+    // 过滤出有效的匹配模式
+    const patterns = lines
+      .filter((line) => line.trim() !== '' && !line.startsWith('#'))
+      .map((line) => line.trim())
+      .filter((pattern) => parseMatchPattern(pattern) !== null)
+
+    return patterns
+  } catch (error) {
+    console.error('Error parsing subscribe content:', error)
+    throw error
+  }
+}

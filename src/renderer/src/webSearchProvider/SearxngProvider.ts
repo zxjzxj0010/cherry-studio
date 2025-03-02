@@ -1,4 +1,5 @@
 import { SearxngClient } from '@agentic/searxng'
+import { WebSearchState } from '@renderer/store/websearch'
 import { WebSearchProvider, WebSearchResponse } from '@renderer/types'
 import axios from 'axios'
 
@@ -46,7 +47,7 @@ export default class SearxngProvider extends BaseWebSearchProvider {
     }
   }
 
-  public async search(query: string, maxResults: number): Promise<WebSearchResponse> {
+  public async search(query: string, websearch: WebSearchState): Promise<WebSearchResponse> {
     try {
       if (!query) {
         throw new Error('Search query cannot be empty')
@@ -77,7 +78,7 @@ export default class SearxngProvider extends BaseWebSearchProvider {
 
       return {
         query: result.query,
-        results: result.results.slice(0, maxResults).map((result) => {
+        results: result.results.slice(0, websearch.maxResults).map((result) => {
           return {
             title: result.title || 'No title',
             content: result.content || '',

@@ -1,38 +1,76 @@
 import { CheckOutlined, InfoCircleOutlined, LoadingOutlined } from '@ant-design/icons'
 import { useTheme } from '@renderer/context/ThemeProvider'
+import { useWebSearch } from '@renderer/hooks/useWebSearch'
 import { useDefaultWebSearchProvider, useWebSearchProviders } from '@renderer/hooks/useWebSearchProviders'
 import WebSearchService from '@renderer/services/WebSearchService'
-import { useAppDispatch, useAppSelector } from '@renderer/store'
+import { useAppDispatch } from '@renderer/store'
 import { setExcludeDomains, setMaxResult, setSearchWithTime } from '@renderer/store/websearch'
-import { parseMatchPattern } from '@renderer/utils/blacklistMatchPattern'
-import { Alert, Button, Select, Slider, Switch } from 'antd'
+import { parseMatchPattern, parseSubscribeContent } from '@renderer/utils/blacklistMatchPattern'
+import type { TableProps } from 'antd'
+import { Alert, Button, Select, Slider, Switch, Table } from 'antd'
 import TextArea from 'antd/es/input/TextArea'
 import { t } from 'i18next'
 import { FC, useEffect, useState } from 'react'
 
 import { SettingContainer, SettingDivider, SettingGroup, SettingRow, SettingRowTitle, SettingTitle } from '..'
+import AddSubscribePopup from './AddSubscribePopup'
 
+type TableRowSelection<T extends object = object> = TableProps<T>['rowSelection']
+interface DataType {
+  key: React.Key
+  url: string
+  name: string
+}
+const columns: TableProps<DataType>['columns'] = [
+  { title: t('common.name'), dataIndex: 'name', key: 'name' },
+  {
+    title: 'URL',
+    dataIndex: 'url',
+    key: 'url'
+  }
+]
 const BasicSettings: FC = () => {
   const { theme } = useTheme()
   const { providers } = useWebSearchProviders()
   const { provider: defaultProvider, setDefaultProvider } = useDefaultWebSearchProvider()
   const [selectedProviderId, setSelectedProviderId] = useState<string>('') // 初始值为空字符串
+  const { websearch, setSubscribeSources, addSubscribeSource } = useWebSearch()
 
-  const searchWithTime = useAppSelector((state) => state.websearch.searchWithTime)
-  const maxResults = useAppSelector((state) => state.websearch.maxResults)
-  const excludeDomains = useAppSelector((state) => state.websearch.excludeDomains)
   const [errFormat, setErrFormat] = useState(false)
   const [blacklistInput, setBlacklistInput] = useState('')
   const [apiChecking, setApiChecking] = useState(false)
   const [apiValid, setApiValid] = useState(false)
+  const [subscribeChecking, setSubscribeChecking] = useState(false)
+  const [subscribeValid, setSubscribeValid] = useState(false)
+
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
+  const [dataSource, setDataSource] = useState<DataType[]>(
+    websearch.subscribeSources?.map((source) => ({
+      key: source.key,
+      url: source.url,
+      name: source.name
+    })) || []
+  )
 
   const dispatch = useAppDispatch()
 
+  // 添加 useEffect 以监听 subscribeSources 的变化
   useEffect(() => {
-    if (excludeDomains) {
-      setBlacklistInput(excludeDomains.join('\n'))
+    setDataSource(
+      (websearch.subscribeSources || []).map((source) => ({
+        key: source.key,
+        url: source.url,
+        name: source.name
+      }))
+    )
+    console.log('subscribeSources', websearch.subscribeSources)
+  }, [websearch.subscribeSources])
+
+  useEffect(() => {
+    if (websearch.excludeDomains) {
+      setBlacklistInput(websearch.excludeDomains.join('\n'))
     }
-  }, [excludeDomains])
+  }, [websearch.excludeDomains])
 
   // 添加一个 useEffect 来监听 defaultProvider 的变化
   useEffect(() => {
@@ -87,8 +125,18 @@ const BasicSettings: FC = () => {
         setApiValid(false)
         return
       }
-      const valid = await WebSearchService.checkSearch(provider)
+      const { valid, error } = await WebSearchService.checkSearch(provider)
+      const errorMessage = error && error?.message ? ' ' + error?.message : ''
+
+      window.message[valid ? 'success' : 'error']({
+        key: 'api-check',
+        style: { marginTop: '3vh' },
+        duration: valid ? 2 : 8,
+        content: valid ? t('message.api.connection.success') : t('message.api.connection.failed') + errorMessage
+      })
       setApiValid(valid)
+      setApiChecking(false)
+      setTimeout(() => setApiValid(false), 3000)
     } else {
       window.message.info({
         content: t('settings.websearch.no_provider_selected'),
@@ -97,8 +145,118 @@ const BasicSettings: FC = () => {
         key: 'quick-assistant-info'
       })
       setApiValid(false)
+      setApiChecking(false)
     }
-    setApiChecking(false)
+  }
+  const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
+    console.log('selectedRowKeys changed: ', newSelectedRowKeys)
+    setSelectedRowKeys(newSelectedRowKeys)
+  }
+
+  const rowSelection: TableRowSelection<DataType> = {
+    selectedRowKeys,
+    onChange: onSelectChange
+  }
+  async function updateSubscribe() {
+    setSubscribeChecking(true)
+
+    try {
+      // 获取选中的订阅源
+      const selectedSources = dataSource.filter((item) => selectedRowKeys.includes(item.key))
+
+      // 用于存储所有成功解析的订阅源数据
+      const updatedSources: {
+        key: number
+        url: string
+        name: string
+        blacklist: string[]
+      }[] = []
+
+      // 为每个选中的订阅源获取并解析内容
+      for (const source of selectedSources) {
+        try {
+          // 获取并解析订阅源内容
+          const blacklist = await parseSubscribeContent(source.url)
+
+          if (blacklist.length > 0) {
+            updatedSources.push({
+              key: Number(source.key),
+              url: source.url,
+              name: source.name,
+              blacklist
+            })
+          }
+        } catch (error) {
+          console.error(`Error updating subscribe source ${source.url}:`, error)
+          // 显示具体源更新失败的消息
+          window.message.warning({
+            content: t('settings.websearch.subscribe_source_update_failed', { url: source.url }),
+            duration: 3
+          })
+        }
+      }
+
+      if (updatedSources.length > 0) {
+        // 更新 Redux store
+        setSubscribeSources(updatedSources)
+        setSubscribeValid(true)
+        // 显示成功消息
+        window.message.success({
+          content: t('settings.websearch.subscribe_update_success'),
+          duration: 2
+        })
+        setTimeout(() => setSubscribeValid(false), 3000)
+      } else {
+        setSubscribeValid(false)
+        throw new Error('No valid sources updated')
+      }
+    } catch (error) {
+      console.error('Error updating subscribes:', error)
+      window.message.error({
+        content: t('settings.websearch.subscribe_update_failed'),
+        duration: 2
+      })
+    }
+    setSubscribeChecking(false)
+  }
+
+  // 修改 handleAddSubscribe 函数
+  async function handleAddSubscribe() {
+    setSubscribeChecking(true)
+    const result = await AddSubscribePopup.show({
+      title: t('settings.websearch.subscribe_add')
+    })
+
+    if (result && result.url) {
+      try {
+        // 获取并解析订阅源内容
+        const blacklist = await parseSubscribeContent(result.url)
+
+        if (blacklist.length === 0) {
+          throw new Error('No valid patterns found in subscribe content')
+        }
+        // 添加到 Redux store
+        addSubscribeSource({
+          url: result.url,
+          name: result.name || result.url,
+          blacklist
+        })
+        setSubscribeValid(true)
+        // 显示成功消息
+        window.message.success({
+          content: t('settings.websearch.subscribe_add_success'),
+          duration: 2
+        })
+        setTimeout(() => setSubscribeValid(false), 3000)
+      } catch (error) {
+        setSubscribeValid(false)
+        window.message.error({
+          content: t('settings.websearch.subscribe_add_failed'),
+          duration: 2
+        })
+      }
+    }
+    setSubscribeChecking(false)
   }
 
   return (
@@ -118,6 +276,7 @@ const BasicSettings: FC = () => {
             />
             <Button
               type={apiValid ? 'primary' : 'default'}
+              ghost={apiValid}
               onClick={async () => await checkSearch()}
               disabled={apiChecking}>
               {apiChecking ? <LoadingOutlined spin /> : apiValid ? <CheckOutlined /> : t('settings.websearch.check')}
@@ -127,13 +286,13 @@ const BasicSettings: FC = () => {
         <SettingDivider />
         <SettingRow>
           <SettingRowTitle>{t('settings.websearch.search_with_time')}</SettingRowTitle>
-          <Switch checked={searchWithTime} onChange={(checked) => dispatch(setSearchWithTime(checked))} />
+          <Switch checked={websearch.searchWithTime} onChange={(checked) => dispatch(setSearchWithTime(checked))} />
         </SettingRow>
         <SettingDivider style={{ marginTop: 15, marginBottom: 5 }} />
         <SettingRow style={{ marginBottom: -10 }}>
           <SettingRowTitle>{t('settings.websearch.search_max_result')}</SettingRowTitle>
           <Slider
-            defaultValue={maxResults}
+            defaultValue={websearch.maxResults}
             style={{ width: '200px' }}
             min={1}
             max={20}
@@ -160,6 +319,40 @@ const BasicSettings: FC = () => {
           {t('common.save')}
         </Button>
         {errFormat && <Alert message={t('settings.websearch.blacklist_tooltip')} type="error" />}
+        <SettingDivider />
+        <SettingTitle>{t('settings.websearch.subscribe')}</SettingTitle>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+          <SettingRow>
+            {t('settings.websearch.subscribe_tooltip')}
+            <Button
+              type={subscribeValid ? 'primary' : 'default'}
+              ghost={subscribeValid}
+              disabled={subscribeChecking}
+              onClick={handleAddSubscribe}>
+              {t('settings.websearch.subscribe_add')}
+            </Button>
+          </SettingRow>
+          <Table<DataType>
+            rowSelection={{ type: 'checkbox', ...rowSelection }}
+            columns={columns}
+            dataSource={dataSource}
+            pagination={{ position: ['none'] }}
+          />
+          <Button
+            type={subscribeValid ? 'primary' : 'default'}
+            ghost={subscribeValid}
+            disabled={subscribeChecking}
+            style={{ width: 100 }}
+            onClick={updateSubscribe}>
+            {subscribeChecking ? (
+              <LoadingOutlined spin />
+            ) : subscribeValid ? (
+              <CheckOutlined />
+            ) : (
+              t('settings.websearch.subscribe_update')
+            )}
+          </Button>
+        </div>
       </SettingGroup>
     </SettingContainer>
   )

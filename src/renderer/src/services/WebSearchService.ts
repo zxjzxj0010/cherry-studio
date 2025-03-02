@@ -1,21 +1,7 @@
 import store from '@renderer/store'
-import { setDefaultProvider } from '@renderer/store/websearch'
+import { setDefaultProvider, WebSearchState } from '@renderer/store/websearch'
 import { WebSearchProvider, WebSearchResponse } from '@renderer/types'
 import WebSearchEngineProvider from '@renderer/webSearchProvider/WebSearchEngineProvider'
-import dayjs from 'dayjs'
-
-interface WebSearchState {
-  // 默认搜索提供商的ID
-  defaultProvider: string
-  // 所有可用的搜索提供商列表
-  providers: WebSearchProvider[]
-  // 是否在搜索查询中添加当前日期
-  searchWithTime: boolean
-  // 搜索结果的最大数量
-  maxResults: number
-  // 要排除的域名列表
-  excludeDomains: string[]
-}
 
 /**
  * 提供网络搜索相关功能的服务类
@@ -36,8 +22,8 @@ class WebSearchService {
    * @returns 如果默认搜索提供商已启用则返回true，否则返回false
    */
   public isWebSearchEnabled(): boolean {
-    const { defaultProvider, providers } = this.getWebSearchState()
-    const provider = providers.find((provider) => provider.id === defaultProvider)
+    const websearch = this.getWebSearchState()
+    const provider = websearch.providers.find((provider) => provider.id === websearch.defaultProvider)
     return provider?.enabled ?? false
   }
 
@@ -48,11 +34,11 @@ class WebSearchService {
    * @throws 如果找不到默认提供商则抛出错误
    */
   public getWebSearchProvider(): WebSearchProvider {
-    const { defaultProvider, providers } = this.getWebSearchState()
-    let provider = providers.find((provider) => provider.id === defaultProvider)
+    const websearch = this.getWebSearchState()
+    let provider = websearch.providers.find((provider) => provider.id === websearch.defaultProvider)
 
     if (!provider) {
-      provider = providers.find((p) => p.enabled) || providers[0]
+      provider = websearch.providers.find((p) => p.enabled) || websearch.providers[0]
       if (provider) {
         // 可选：自动更新默认提供商
         store.dispatch(setDefaultProvider(provider.id))
@@ -72,16 +58,16 @@ class WebSearchService {
    * @returns 搜索响应
    */
   public async search(provider: WebSearchProvider, query: string): Promise<WebSearchResponse> {
-    const { searchWithTime, maxResults, excludeDomains } = this.getWebSearchState()
+    const websearch = this.getWebSearchState()
     const webSearchEngine = new WebSearchEngineProvider(provider)
 
-    let formattedQuery = query
-    if (searchWithTime) {
-      formattedQuery = `today is ${dayjs().format('YYYY-MM-DD')} \r\n ${query}`
-    }
+    const formattedQuery = query
+    // if (websearch.searchWithTime) {
+    //   formattedQuery = `today is ${dayjs().format('YYYY-MM-DD')} \r\n ${query}`
+    // }
 
     try {
-      return await webSearchEngine.search(formattedQuery, maxResults, excludeDomains)
+      return await webSearchEngine.search(formattedQuery, websearch)
     } catch (error) {
       console.error('Search failed:', error)
       return {
@@ -89,24 +75,43 @@ class WebSearchService {
       }
     }
   }
-
   /**
    * 检查搜索提供商是否正常工作
    * @public
    * @param provider 要检查的搜索提供商
-   * @returns 如果提供商可用返回true，否则返回false
+   * @returns 包含验证结果和错误信息的对象
    */
-  public async checkSearch(provider: WebSearchProvider): Promise<boolean> {
-    try {
-      const response = await this.search(provider, 'test query')
+  public async checkSearch(provider: WebSearchProvider): Promise<{ valid: boolean; error?: Error }> {
+    if (!provider) {
+      return {
+        valid: false,
+        error: new Error('No search provider specified')
+      }
+    }
 
-      // 优化的判断条件：检查结果是否有效且没有错误
-      return response.results.length > 0
+    try {
+      const response = await this.search(provider, 'china')
+
+      if (!response || !Array.isArray(response.results)) {
+        return {
+          valid: false,
+          error: new Error('Invalid response format from search provider')
+        }
+      }
+
+      return {
+        valid: response.results.length > 0,
+        ...(response.results.length === 0 && {
+          error: new Error('Search provider returned no results')
+        })
+      }
     } catch (error) {
       console.error('Provider check failed:', error)
-      return false
+      return {
+        valid: false,
+        error: error instanceof Error ? error : new Error('Unknown error occurred')
+      }
     }
   }
 }
-
 export default new WebSearchService()
