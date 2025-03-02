@@ -81,4 +81,9 @@ afterPack: scripts/after-pack.js
 afterSign: scripts/notarize.js
 releaseInfo:
   releaseNotes: |
-    全部模型支持 Web 搜索
+    服务商新增天翼云
+    助手支持使用模型图标当作头像
+    网络搜索网站图标快速加载
+    macOS 移除 Option 开头快捷键限制
+    代理配置优化
+    界面优化和错误修复

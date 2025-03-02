@@ -156,17 +156,19 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
     }
 
     if (files) {
-      const _files: FileType[] = files.map((file) => ({
-        id: file.name,
-        name: file.name,
-        path: file.path,
-        size: file.size,
-        ext: `.${file.name.split('.').pop()}`,
-        count: 1,
-        origin_name: file.name,
-        type: file.type as FileTypes,
-        created_at: new Date()
-      }))
+      const _files: FileType[] = files
+        .map((file) => ({
+          id: file.name,
+          name: file.name,
+          path: file.path,
+          size: file.size,
+          ext: `.${file.name.split('.').pop()}`,
+          count: 1,
+          origin_name: file.name,
+          type: file.type as FileTypes,
+          created_at: new Date()
+        }))
+        .filter(({ ext }) => fileTypes.includes(ext))
       // console.debug('[KnowledgeContent] Uploading files:', _files, files)
       // const uploadedFiles = await FileManager.uploadFiles(_files)
       // addFiles(uploadedFiles)
@@ -320,7 +322,7 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
       </FileSection>
 
       <FileListSection>
-        {fileItems.map((item) => {
+        {fileItems.reverse().map((item) => {
           const file = item.content as FileType
           return (
             <ItemCard key={item.id}>
@@ -354,7 +356,7 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
           </Button>
         </TitleWrapper>
         <FlexColumn>
-          {directoryItems.map((item) => (
+          {directoryItems.reverse().map((item) => (
             <ItemCard key={item.id}>
               <ItemContent>
                 <ItemInfo>
@@ -392,7 +394,7 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
           </Button>
         </TitleWrapper>
         <FlexColumn>
-          {urlItems.map((item) => (
+          {urlItems.reverse().map((item) => (
             <ItemCard key={item.id}>
               <ItemContent>
                 <ItemInfo>
@@ -446,7 +448,7 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
           </Button>
         </TitleWrapper>
         <FlexColumn>
-          {sitemapItems.map((item) => (
+          {sitemapItems.reverse().map((item) => (
             <ItemCard key={item.id}>
               <ItemContent>
                 <ItemInfo>
@@ -483,7 +485,7 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
           </Button>
         </TitleWrapper>
         <FlexColumn>
-          {noteItems.map((note) => (
+          {noteItems.reverse().map((note) => (
             <ItemCard key={note.id}>
               <ItemContent>
                 <ItemInfo onClick={() => handleEditNote(note)} style={{ cursor: 'pointer' }}>
