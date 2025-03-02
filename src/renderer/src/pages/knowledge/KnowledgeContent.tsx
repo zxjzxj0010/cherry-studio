@@ -23,7 +23,7 @@ import { clearPendingChanges } from '@renderer/store/knowledgeFile'
 import { FileType, FileTypes, KnowledgeBase, KnowledgeItem } from '@renderer/types'
 import { bookExts, documentExts, textExts, thirdPartyApplicationExts } from '@shared/config/constant'
 import { Alert, Button, Card, Divider, Dropdown, message, Tag, Tooltip, Typography, Upload } from 'antd'
-import { FC, useEffect } from 'react'
+import { FC, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
@@ -67,6 +67,19 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
   const disabled = !base?.version || !providerName
   const dispatch = useDispatch()
   const pendingChanges = useSelector((state: RootState) => state.knowledgeFile.pendingChanges)
+  const [refresh, setRefresh] = useState<boolean>(false)
+  useEffect(() => {
+    if (!refresh || !base) {
+      return
+    }
+
+    if (base.items.length > 0) {
+      base.items.forEach((item) => {
+        refreshItem(item)
+      })
+    }
+    setRefresh(false)
+  }, [refresh, base, refreshItem])
 
   useEffect(() => {
     if (pendingChanges.length === 0) {
@@ -496,7 +509,11 @@ const KnowledgeContent: FC<KnowledgeContentProps> = ({ selectedBase }) => {
         <Tag color="blue">{base.model.name}</Tag>
         <Tag color="cyan">{t('models.dimensions', { dimensions: base.dimensions || 0 })}</Tag>
         {providerName && <Tag color="purple">{providerName}</Tag>}
-        <Button icon={<SettingOutlined />} onClick={() => KnowledgeSettingsPopup.show({ base })} size="small" />
+        <Button
+          icon={<SettingOutlined />}
+          onClick={() => KnowledgeSettingsPopup.show({ base, setRefresh })}
+          size="small"
+        />
       </ModelInfo>
 
       <IndexSection>

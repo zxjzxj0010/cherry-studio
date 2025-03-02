@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next'
 
 interface ShowParams {
   base: KnowledgeBase
+  setRefresh: (value: boolean) => void
 }
 
 interface FormData {
@@ -30,7 +31,7 @@ interface Props extends ShowParams {
   resolve: (data: any) => void
 }
 
-const PopupContainer: React.FC<Props> = ({ base: _base, resolve }) => {
+const PopupContainer: React.FC<Props> = ({ base: _base, resolve, setRefresh }) => {
   const [open, setOpen] = useState(true)
   const [form] = Form.useForm<FormData>()
   const { t } = useTranslation()
@@ -73,6 +74,8 @@ const PopupContainer: React.FC<Props> = ({ base: _base, resolve }) => {
         autoUpdate: values.autoUpdate ?? false
       }
       updateKnowledgeBase(newBase)
+      // 当原值为false，新值为true时才刷新
+      setRefresh(!base.autoUpdate && values.autoUpdate)
       setOpen(false)
       resolve(newBase)
     } catch (error) {
