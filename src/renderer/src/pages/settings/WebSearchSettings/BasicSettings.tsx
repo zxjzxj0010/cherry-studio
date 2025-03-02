@@ -258,6 +258,21 @@ const BasicSettings: FC = () => {
     }
     setSubscribeChecking(false)
   }
+  function handleDeleteSubscribe() {
+    try {
+      // 过滤掉被选中要删除的项目
+      const remainingSources =
+        websearch.subscribeSources?.filter((source) => !selectedRowKeys.includes(source.key)) || []
+
+      // 更新 Redux store
+      setSubscribeSources(remainingSources)
+
+      // 清空选中状态
+      setSelectedRowKeys([])
+    } catch (error) {
+      console.error('Error deleting subscribes:', error)
+    }
+  }
 
   return (
     <SettingContainer theme={theme}>
@@ -338,20 +353,25 @@ const BasicSettings: FC = () => {
             dataSource={dataSource}
             pagination={{ position: ['none'] }}
           />
-          <Button
-            type={subscribeValid ? 'primary' : 'default'}
-            ghost={subscribeValid}
-            disabled={subscribeChecking}
-            style={{ width: 100 }}
-            onClick={updateSubscribe}>
-            {subscribeChecking ? (
-              <LoadingOutlined spin />
-            ) : subscribeValid ? (
-              <CheckOutlined />
-            ) : (
-              t('settings.websearch.subscribe_update')
-            )}
-          </Button>
+          <SettingRow>
+            <Button
+              type={subscribeValid ? 'primary' : 'default'}
+              ghost={subscribeValid}
+              disabled={subscribeChecking || selectedRowKeys.length === 0}
+              style={{ width: 100 }}
+              onClick={updateSubscribe}>
+              {subscribeChecking ? (
+                <LoadingOutlined spin />
+              ) : subscribeValid ? (
+                <CheckOutlined />
+              ) : (
+                t('settings.websearch.subscribe_update')
+              )}
+            </Button>
+            <Button style={{ width: 100 }} disabled={selectedRowKeys.length === 0} onClick={handleDeleteSubscribe}>
+              {t('settings.websearch.subscribe_delete')}
+            </Button>
+          </SettingRow>
         </div>
       </SettingGroup>
     </SettingContainer>

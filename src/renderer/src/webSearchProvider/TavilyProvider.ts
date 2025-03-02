@@ -17,6 +17,14 @@ export default class TavilyProvider extends BaseWebSearchProvider {
 
   public async search(query: string, websearch: WebSearchState): Promise<WebSearchResponse> {
     console.log('websearch', websearch)
+    const exclude_domains = [
+      ...websearch.excludeDomains,
+      ...websearch.subscribeSources.reduce<string[]>((acc, source) => {
+        return acc.concat(source.blacklist || [])
+      }, [])
+    ]
+
+    console.log('exclude_domains', exclude_domains)
     try {
       if (!query.trim()) {
         throw new Error('Search query cannot be empty')
@@ -25,7 +33,7 @@ export default class TavilyProvider extends BaseWebSearchProvider {
       const result = await this.tvly.search({
         query,
         max_results: Math.max(1, websearch.maxResults),
-        exclude_domains: websearch.subscribeSources[0].blacklist || []
+        exclude_domains: exclude_domains || []
       })
       console.log('result', result)
 

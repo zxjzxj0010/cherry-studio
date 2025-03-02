@@ -852,6 +852,7 @@
         "no_provider_selected": "请选择搜索服务商后再检查",
         "url_required": "请填写订阅源地址!",
         "url_invalid": "请正确填写订阅源地址!",
+        "subscribe_delete": "删除订阅源",
         "tavily": {
           "api_key": "Tavily API 密钥",
           "api_key.placeholder": "请输入 Tavily API 密钥",
