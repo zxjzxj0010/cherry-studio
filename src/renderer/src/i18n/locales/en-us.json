@@ -392,7 +392,7 @@
       "message.code_style": "Code style",
       "message.delete.content": "Are you sure you want to delete this message?",
       "message.delete.title": "Delete Message",
-            "message.multi_model_style": "Multi-model response style",
+      "message.multi_model_style": "Multi-model response style",
       "message.multi_model_style.fold": "Fold view",
       "message.multi_model_style.grid": "Grid layout",
       "message.multi_model_style.horizontal": "Side by side",
@@ -848,7 +848,18 @@
         "check": "Check",
         "search_provider": "Search service provider",
         "search_provider_placeholder": "Choose a search service provider.",
-        "no_provider_selected": "Please select a search service provider before checking."
+        "no_provider_selected": "Please select a search service provider before checking.",
+        "subscribe": "Subscribe",
+        "subscribe_tooltip": "Subscribe to the blacklist.",
+        "subscribe_update": "Update now",
+        "subscribe_add": "Add Subscription",
+        "subscribe_url": "Subscription feed URL",
+        "subscribe_name": "Alternative name",
+        "subscribe_name.placeholder": "Alternative name used when the downloaded subscription source has no name.",
+        "subscribe_add_success": "Subscription source added successfully!",
+        "url_required": "Please fill in the subscription feed address!",
+        "url_invalid": "Please fill in the subscription feed address correctly!",
+        "subscribe_delete": "Delete subscription source"
       }
     },
     "translate": {

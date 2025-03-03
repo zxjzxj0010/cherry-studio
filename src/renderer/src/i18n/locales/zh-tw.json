@@ -847,7 +847,18 @@
         "check": "檢查",
         "search_provider": "搜尋服務商",
         "search_provider_placeholder": "選擇一個搜尋服務商",
-        "no_provider_selected": "請選擇搜索服務商後再檢查"
+        "no_provider_selected": "請選擇搜索服務商後再檢查",
+        "subscribe": "訂閱",
+        "subscribe_tooltip": "訂閱黑名單列表",
+        "subscribe_update": "立即更新",
+        "subscribe_add": "新增訂閱",
+        "subscribe_url": "訂閱源地址",
+        "subscribe_name": "替代名稱",
+        "subscribe_name.placeholder": "當下載的訂閱源沒有名稱時所使用的替代名稱",
+        "subscribe_add_success": "訂閱源添加成功!",
+        "url_required": "請填寫訂閱源地址!",
+        "url_invalid": "請正確填寫訂閱源地址!",
+        "subscribe_delete": "刪除訂閱源"
       },
       "display.assistant.title": "助手設定"
     },

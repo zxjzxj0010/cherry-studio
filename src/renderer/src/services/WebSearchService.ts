@@ -90,7 +90,7 @@ class WebSearchService {
     }
 
     try {
-      const response = await this.search(provider, 'china')
+      const response = await this.search(provider, 'csdn')
 
       if (!response || !Array.isArray(response.results)) {
         return {

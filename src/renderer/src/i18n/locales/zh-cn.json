@@ -834,7 +834,7 @@
         "check": "检查",
         "blacklist": "黑名单",
         "blacklist_description": "在搜索结果中不会出现以下网站的结果",
-        "blacklist_tooltip": "请使用以下格式(换行分隔)\nexample.com\nhttps://www.example.com\nhttps://example.com\n*://*.example.com",
+        "blacklist_tooltip": "请使用以下格式(换行分隔)\n匹配模式: *://*.example.com/*\n正则表达式: /example\\.(net|org)/",
         "get_api_key": "点击这里获取密钥",
         "search_max_result": "搜索结果个数",
         "search_result_default": "默认",

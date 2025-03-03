@@ -848,7 +848,18 @@
         "check": "проверка",
         "search_provider": "поиск сервисного провайдера",
         "search_provider_placeholder": "Выберите поставщика поисковых услуг",
-        "no_provider_selected": "Пожалуйста, выберите поставщика поисковых услуг, затем проверьте."
+        "no_provider_selected": "Пожалуйста, выберите поставщика поисковых услуг, затем проверьте.",
+        "subscribe": "Подписка",
+        "subscribe_tooltip": "Подписка на черный список",
+        "subscribe_update": "Сразу обновить",
+        "subscribe_add": "Добавить подписку",
+        "subscribe_url": "URL подписки",
+        "subscribe_name": "Замена имени",
+        "subscribe_name.placeholder": "当下载的订阅源没有名称时所使用的替代名称",
+        "subscribe_add_success": "Подписка успешно добавлена!",
+        "url_required": "Пожалуйста, укажите адрес источника подписки!",
+        "url_invalid": "Пожалуйста, правильно заполните адрес источника подписки!",
+        "subscribe_delete": "Удалить источник подписки"
       }
     },
     "translate": {

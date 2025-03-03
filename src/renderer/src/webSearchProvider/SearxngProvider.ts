@@ -1,6 +1,7 @@
 import { SearxngClient } from '@agentic/searxng'
 import { WebSearchState } from '@renderer/store/websearch'
 import { WebSearchProvider, WebSearchResponse } from '@renderer/types'
+import { filterResultWithBlacklist } from '@renderer/utils/blacklist'
 import axios from 'axios'
 
 import BaseWebSearchProvider from './BaseWebSearchProvider'
@@ -75,8 +76,7 @@ export default class SearxngProvider extends BaseWebSearchProvider {
       if (!result || !Array.isArray(result.results)) {
         throw new Error('Invalid search results from SearxNG')
       }
-
-      return {
+      const formattedResponse = {
         query: result.query,
         results: result.results.slice(0, websearch.maxResults).map((result) => {
           return {
@@ -86,6 +86,11 @@ export default class SearxngProvider extends BaseWebSearchProvider {
           }
         })
       }
+
+      // filter results with blacklist
+      const filteredResult = await filterResultWithBlacklist(formattedResponse, websearch)
+
+      return filteredResult
     } catch (err) {
       console.error('Search failed:', err)
       // Return empty results instead of throwing to prevent UI crashes

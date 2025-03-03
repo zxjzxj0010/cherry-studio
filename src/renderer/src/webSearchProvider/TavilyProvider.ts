@@ -1,6 +1,7 @@
 import { TavilyClient } from '@agentic/tavily'
 import { WebSearchState } from '@renderer/store/websearch'
 import { WebSearchProvider, WebSearchResponse } from '@renderer/types'
+import { filterResultWithBlacklist } from '@renderer/utils/blacklist'
 
 import BaseWebSearchProvider from './BaseWebSearchProvider'
 
@@ -16,15 +17,6 @@ export default class TavilyProvider extends BaseWebSearchProvider {
   }
 
   public async search(query: string, websearch: WebSearchState): Promise<WebSearchResponse> {
-    console.log('websearch', websearch)
-    const exclude_domains = [
-      ...websearch.excludeDomains,
-      ...websearch.subscribeSources.reduce<string[]>((acc, source) => {
-        return acc.concat(source.blacklist || [])
-      }, [])
-    ]
-
-    console.log('exclude_domains', exclude_domains)
     try {
       if (!query.trim()) {
         throw new Error('Search query cannot be empty')
@@ -32,12 +24,9 @@ export default class TavilyProvider extends BaseWebSearchProvider {
 
       const result = await this.tvly.search({
         query,
-        max_results: Math.max(1, websearch.maxResults),
-        exclude_domains: exclude_domains || []
+        max_results: Math.max(1, websearch.maxResults)
       })
-      console.log('result', result)
-
-      return {
+      const formattedResponse = {
         query: result.query,
         results: result.results.map((result) => ({
           title: result.title || 'No title',
@@ -45,6 +34,11 @@ export default class TavilyProvider extends BaseWebSearchProvider {
           url: result.url || ''
         }))
       }
+
+      // filter results with blacklist
+      const filteredResult = await filterResultWithBlacklist(formattedResponse, websearch)
+
+      return filteredResult
     } catch (error) {
       console.error('Tavily search failed:', error)
       throw new Error(`Search failed: ${error instanceof Error ? error.message : 'Unknown error'}`)

@@ -5,7 +5,7 @@ import { useDefaultWebSearchProvider, useWebSearchProviders } from '@renderer/ho
 import WebSearchService from '@renderer/services/WebSearchService'
 import { useAppDispatch } from '@renderer/store'
 import { setExcludeDomains, setMaxResult, setSearchWithTime } from '@renderer/store/websearch'
-import { parseMatchPattern, parseSubscribeContent } from '@renderer/utils/blacklistMatchPattern'
+import { parseMatchPattern, parseSubscribeContent } from '@renderer/utils/blacklist'
 import type { TableProps } from 'antd'
 import { Alert, Button, Select, Slider, Switch, Table } from 'antd'
 import TextArea from 'antd/es/input/TextArea'
@@ -99,6 +99,12 @@ const BasicSettings: FC = () => {
     if (hasError) return
 
     dispatch(setExcludeDomains(validDomains))
+    window.message.info({
+      content: t('message.save.success.title'),
+      duration: 4,
+      icon: <InfoCircleOutlined />,
+      key: 'save-blacklist-info'
+    })
   }
 
   function updateSelectedWebSearchProvider(providerId: string) {

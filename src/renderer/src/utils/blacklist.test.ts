@@ -27,7 +27,7 @@
 import assert from 'node:assert'
 import { test } from 'node:test'
 
-import { MatchPatternMap } from './blacklistMatchPattern'
+import { MatchPatternMap } from './blacklist'
 
 function get(map: MatchPatternMap<number>, url: string) {
   return map.get(url).sort()
