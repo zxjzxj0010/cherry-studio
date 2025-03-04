@@ -597,6 +597,10 @@
       "data": {
         "app_data": "App Data",
         "app_logs": "App Logs",
+        "app_knowledge": "Knowledge Base Files",
+        "app_knowledge.remove_all": "Remove Files",
+        "app_knowledge.remove_all_confirm": "Removing knowledge base files will not delete the knowledge base itself, which will reduce the storage space occupied. Continue?",
+        "app_knowledge.remove_all_success": "Files removed successfully",
         "clear_cache": {
           "button": "Clear Cache",
           "confirm": "Clearing the cache will delete application cache data, including minapp data. This action is irreversible, continue?",
@@ -795,7 +799,8 @@
           "auth_failed": "Github Copilot authentication failed.",
           "logout_success": "Successfully logged out.",
           "logout_failed": "Exit failed, please try again."
-        }
+        },
+        "search": "Search Providers..."
       },
       "proxy": {
         "mode": {
@@ -900,6 +905,34 @@
       "quit": "Quit",
       "show_window": "Show Window",
       "visualization": "Visualization"
+    },
+    "backup": {
+      "title": "Data Backup",
+      "confirm": "Are you sure you want to backup data?",
+      "confirm.button": "Select Backup Location",
+      "content": "Backup operation will cover all application data, including chat history, settings, and knowledge base. Please note that the backup process may take some time, thank you for your patience.",
+      "progress": {
+        "title": "Backup Progress",
+        "preparing": "Preparing backup...",
+        "writing_data": "Writing data...",
+        "copying_files": "Copying files... {{progress}}%",
+        "compressing": "Compressing files...",
+        "completed": "Backup completed"
+      }
+    },
+    "restore": {
+      "title": "Data Restore",
+      "confirm": "Are you sure you want to restore data?",
+      "confirm.button": "Select Backup File",
+      "content": "Restore operation will overwrite all current application data with the backup data. Please note that the restore process may take some time, thank you for your patience.",
+      "progress": {
+        "title": "Restore Progress",
+        "preparing": "Preparing restore...",
+        "extracting": "Extracting backup...",
+        "reading_data": "Reading data...",
+        "copying_files": "Copying files... {{progress}}%",
+        "completed": "Restore completed"
+      }
     }
   }
 }

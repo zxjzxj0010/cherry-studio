@@ -597,6 +597,10 @@
       "data": {
         "app_data": "应用数据",
         "app_logs": "应用日志",
+        "app_knowledge": "知识库文件",
+        "app_knowledge.remove_all": "删除文件",
+        "app_knowledge.remove_all_confirm": "删除知识库文件不会删除知识库本身，可以减少存储空间占用，删除之后文件无法再打开，是否继续？",
+        "app_knowledge.remove_all_success": "文件删除成功",
         "clear_cache": {
           "button": "清除缓存",
           "confirm": "清除缓存将删除应用缓存的数据，包括小程序数据。此操作不可恢复，是否继续？",
@@ -795,7 +799,8 @@
           "auth_failed": "Github Copilot认证失败",
           "logout_success": "已成功退出",
           "logout_failed": "退出失败，请重试"
-        }
+        },
+        "search": "搜索模型平台..."
       },
       "proxy": {
         "mode": {
@@ -900,6 +905,34 @@
       "quit": "退出",
       "show_window": "显示窗口",
       "visualization": "可视化"
+    },
+    "backup": {
+      "title": "数据备份",
+      "confirm": "确定要备份数据吗？",
+      "confirm.button": "选择备份位置",
+      "content": "备份操作将涵盖所有应用数据，包括聊天记录、设置、知识库等所有数据。请注意，备份过程可能需要一些时间，感谢您的耐心等待。",
+      "progress": {
+        "title": "备份进度",
+        "preparing": "准备备份...",
+        "writing_data": "写入数据...",
+        "copying_files": "复制文件... {{progress}}%",
+        "compressing": "压缩文件...",
+        "completed": "备份完成"
+      }
+    },
+    "restore": {
+      "title": "数据恢复",
+      "confirm": "确定要恢复数据吗？",
+      "confirm.button": "选择备份文件",
+      "content": "恢复操作将使用备份数据覆盖当前所有应用数据。请注意，恢复过程可能需要一些时间，感谢您的耐心等待。",
+      "progress": {
+        "title": "恢复进度",
+        "preparing": "准备恢复...",
+        "extracting": "解压备份...",
+        "reading_data": "读取数据...",
+        "copying_files": "复制文件... {{progress}}%",
+        "completed": "恢复完成"
+      }
     }
   }
 }
