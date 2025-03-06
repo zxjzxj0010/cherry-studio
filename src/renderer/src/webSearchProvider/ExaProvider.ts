@@ -9,7 +9,7 @@ export default class ExaProvider extends BaseWebSearchProvider {
   constructor(provider: WebSearchProvider) {
     super(provider)
     if (!provider.apiKey) {
-      throw new Error('API key is required for Tavily provider')
+      throw new Error('API key is required for Exa provider')
     }
     this.exa = new ExaClient({ apiKey: provider.apiKey })
   }
