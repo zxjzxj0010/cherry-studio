@@ -1180,45 +1180,20 @@ const migrateConfig = {
     return state
   },
   '74': (state: RootState) => {
-    return {
-      ...state,
-      llm: {
-        ...state.llm,
-        providers: [
-          ...state.llm.providers,
-          {
-            id: 'copilot',
-            name: 'Github Copilot',
-            type: 'openai',
-            apiKey: '',
-            apiHost: 'https://api.githubcopilot.com/',
-            models: SYSTEM_MODELS.copilot,
-            isSystem: true,
-            enabled: false
-          },
-          {
-            id: 'xirang',
-            name: 'Xirang',
-            type: 'openai',
-            apiKey: '',
-            apiHost: 'https://wishub-x1.ctyun.cn',
-            models: SYSTEM_MODELS.xirang,
-            isSystem: true,
-            enabled: false
-          },
-          {
-            id: 'xirang',
-            name: 'Xirang',
-            type: 'openai',
-            apiKey: '',
-            apiHost: 'https://wishub-x1.ctyun.cn',
-            models: SYSTEM_MODELS.xirang,
-            isSystem: true,
-            enabled: false
-          }
-        ]
-      }
-    },
+    if (!state.llm.providers.find((provider) => provider.id === 'xirang')) {
+      state.llm.providers.push({
+        id: 'xirang',
+        name: 'Xirang',
+        type: 'openai',
+        apiKey: '',
+        apiHost: 'https://wishub-x1.ctyun.cn',
+        models: SYSTEM_MODELS.xirang,
+        isSystem: true,
+        enabled: false
+      })
+    }
+    return state
+  },
   '75': (state: RootState) => {
     if (state.minapps) {
       const you = DEFAULT_MIN_APPS.find((app) => app.id === 'you')
@@ -1238,6 +1213,16 @@ const migrateConfig = {
       apiKey: '',
       apiHost: 'https://api.lkeap.cloud.tencent.com',
       models: SYSTEM_MODELS['tencent-cloud-ti'],
+      isSystem: true,
+      enabled: false
+    })
+    state.llm.providers.push({
+      id: 'copilot',
+      name: 'Github Copilot',
+      type: 'openai',
+      apiKey: '',
+      apiHost: 'https://api.githubcopilot.com/',
+      models: SYSTEM_MODELS.copilot,
       isSystem: true,
       enabled: false
     })
