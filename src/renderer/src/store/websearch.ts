@@ -54,7 +54,6 @@ const websearchSlice = createSlice({
     updateWebSearchProviders: (state, action: PayloadAction<WebSearchProvider[]>) => {
       state.providers = action.payload
     },
-
     updateWebSearchProvider: (state, action: PayloadAction<WebSearchProvider>) => {
       const index = state.providers.findIndex((provider) => provider.id === action.payload.id)
       if (index !== -1) {
