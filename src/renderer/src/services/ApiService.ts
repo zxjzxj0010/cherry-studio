@@ -33,6 +33,7 @@ export async function fetchChatCompletion({
   window.keyv.set(EVENT_NAMES.CHAT_COMPLETION_PAUSED, false)
 
   const provider = getAssistantProvider(assistant)
+  const webSearchProvider = WebSearchService.getWebSearchProvider()
   const AI = new AiProvider(provider)
 
   store.dispatch(setGenerating(true))
@@ -67,10 +68,10 @@ export async function fetchChatCompletion({
             })
           }
           onResponse({ ...message, status: 'searching' })
-          const webSearch = await WebSearchService.search(lastMessage.content)
+          const webSearch = await WebSearchService.search(webSearchProvider, lastMessage.content)
           message.metadata = {
             ...message.metadata,
-            tavily: webSearch
+            webSearch: webSearch
           }
           window.keyv.set(`web-search-${lastMessage?.id}`, webSearch)
         }
@@ -78,9 +79,6 @@ export async function fetchChatCompletion({
     }
 
     const allMCPTools = await window.api.mcp.listTools()
-    if (allMCPTools.length > 0) {
-      console.log('Available MCP tools:', allMCPTools)
-    }
     await AI.completions({
       messages: filterUsefulMessages(messages),
       assistant,

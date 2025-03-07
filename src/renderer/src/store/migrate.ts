@@ -1216,6 +1216,32 @@ const migrateConfig = {
       isSystem: true,
       enabled: false
     })
+    return state
+  },
+  '77': (state: RootState) => {
+    if (state.websearch) {
+      if (!state.websearch.providers.find((p) => p.id === 'searxng')) {
+        state.websearch.providers.push(
+          {
+            id: 'searxng',
+            name: 'Searxng',
+            apiHost: ''
+          },
+          {
+            id: 'exa',
+            name: 'Exa',
+            apiKey: ''
+          }
+        )
+      }
+      state.websearch.providers.forEach((p) => {
+        // @ts-ignore eslint-disable-next-line
+        delete p.enabled
+      })
+    }
+    return state
+  },
+  '78': (state: RootState) => {
     state.llm.providers.push({
       id: 'copilot',
       name: 'Github Copilot',
