@@ -1,7 +1,7 @@
-import { CheckCircleOutlined, CopyOutlined } from '@ant-design/icons'
+import { CheckCircleOutlined, CopyOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 import { useProvider } from '@renderer/hooks/useProvider'
 import { Provider } from '@renderer/types'
-import { Alert, Button, Input, message, Space, Typography } from 'antd'
+import { Alert, Button, Input, message, Popconfirm, Slider, Space, Typography } from 'antd'
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
@@ -183,11 +183,17 @@ const GithubCopilotSettings: FC<GithubCopilotSettingsProps> = ({ provider: initi
               showIcon
             />
 
-            <SettingRow>
-              <Button type="primary" loading={loading} onClick={handleGetDeviceCode}>
+            <Popconfirm
+              title={t('settings.provider.copilot.confirm_title')}
+              description={t('settings.provider.copilot.confirm_login')}
+              okText={t('common.confirm')}
+              cancelText={t('common.cancel')}
+              onConfirm={handleGetDeviceCode}
+              icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}>
+              <Button type="primary" loading={loading}>
                 {t('settings.provider.copilot.login')}
               </Button>
-            </SettingRow>
+            </Popconfirm>
           </>
         )
     }
@@ -197,6 +203,18 @@ const GithubCopilotSettings: FC<GithubCopilotSettingsProps> = ({ provider: initi
     <Container>
       <Space direction="vertical" style={{ width: '100%' }}>
         {renderAuthContent()}
+        <SettingRow>
+          rate limit
+          <Slider
+            defaultValue={provider.rateLimit ?? 10}
+            style={{ width: 200 }}
+            min={1}
+            max={60}
+            step={1}
+            marks={{ 1: '1', 10: t('settings.websearch.search_result_default'), 60: '60' }}
+            onChangeComplete={(value) => updateProvider({ ...provider, rateLimit: value })}
+          />
+        </SettingRow>
       </Space>
     </Container>
   )

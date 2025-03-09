@@ -113,6 +113,7 @@ export type Provider = {
   enabled?: boolean
   isSystem?: boolean
   isAuthed?: boolean
+  rateLimit?: number
 }
 
 export type ProviderType = 'openai' | 'anthropic' | 'gemini' | 'qwenlm' | 'azure-openai'
