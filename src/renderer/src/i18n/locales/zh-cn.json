@@ -816,7 +816,13 @@
           "logout_success": "已成功退出",
           "logout_failed": "退出失败，请重试",
           "confirm_title": "风险警告",
-          "confirm_login": "过度使用可能会导致您的Github遭到封号，请谨慎使用!!!!"
+          "confirm_login": "过度使用可能会导致您的Github遭到封号，请谨慎使用!!!!",
+          "rate_limit": "速率限制",
+          "custom_headers": "自定义请求头",
+          "headers_description": "自定义请求头(json格式)",
+          "expand": "展开",
+          "model_setting": "模型设置",
+          "invalid_json": "JSON格式错误"
         },
         "search": "搜索模型平台..."
       },

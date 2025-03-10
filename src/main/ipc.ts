@@ -258,4 +258,6 @@ export function registerIpc(mainWindow: BrowserWindow, app: Electron.App) {
   ipcMain.handle('copilot:get-copilot-token', CopilotService.getCopilotToken)
   ipcMain.handle('copilot:save-copilot-token', CopilotService.saveCopilotToken)
   ipcMain.handle('copilot:get-token', CopilotService.getToken)
+  ipcMain.handle('copilot:logout', CopilotService.logout)
+  ipcMain.handle('copilot:get-user', CopilotService.getUser)
 }

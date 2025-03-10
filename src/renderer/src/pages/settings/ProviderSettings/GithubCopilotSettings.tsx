@@ -1,4 +1,5 @@
 import { CheckCircleOutlined, CopyOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
+import { useCopilot } from '@renderer/hooks/useCopilot'
 import { useProvider } from '@renderer/hooks/useProvider'
 import { Provider } from '@renderer/types'
 import { Alert, Button, Input, message, Popconfirm, Slider, Space, Typography } from 'antd'
@@ -6,7 +7,7 @@ import { FC, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import styled from 'styled-components'
 
-import { SettingRow } from '..'
+import { SettingDivider, SettingGroup, SettingHelpText, SettingRow, SettingTitle } from '..'
 
 interface GithubCopilotSettingsProps {
   provider: Provider
@@ -22,13 +23,15 @@ enum AuthStatus {
 const GithubCopilotSettings: FC<GithubCopilotSettingsProps> = ({ provider: initialProvider, setApiKey }) => {
   const { t } = useTranslation()
   const { provider, updateProvider } = useProvider(initialProvider.id)
-
+  const { username, avatar, defaultHeaders, updateState, updateDefaultHeaders } = useCopilot()
   // 状态管理
   const [authStatus, setAuthStatus] = useState<AuthStatus>(AuthStatus.NOT_STARTED)
   const [deviceCode, setDeviceCode] = useState<string>('')
   const [userCode, setUserCode] = useState<string>('')
   const [verificationUri, setVerificationUri] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(false)
+  const [showHeadersForm, setShowHeadersForm] = useState<boolean>(false)
+  const [headerText, setHeaderText] = useState<string>(JSON.stringify(defaultHeaders || {}, null, 2))
 
   // 初始化及同步状态
   useEffect(() => {
@@ -47,7 +50,7 @@ const GithubCopilotSettings: FC<GithubCopilotSettingsProps> = ({ provider: initi
   const handleGetDeviceCode = useCallback(async () => {
     try {
       setLoading(true)
-      const { device_code, user_code, verification_uri } = await window.api.copilot.getAuthMessage()
+      const { device_code, user_code, verification_uri } = await window.api.copilot.getAuthMessage(defaultHeaders)
 
       setDeviceCode(device_code)
       setUserCode(user_code)
@@ -59,21 +62,23 @@ const GithubCopilotSettings: FC<GithubCopilotSettingsProps> = ({ provider: initi
     } finally {
       setLoading(false)
     }
-  }, [t])
+  }, [t, defaultHeaders])
 
   // 使用设备代码获取访问令牌
   const handleGetToken = useCallback(async () => {
     try {
       setLoading(true)
-      const { access_token } = await window.api.copilot.getCopilotToken(deviceCode)
+      const { access_token } = await window.api.copilot.getCopilotToken(deviceCode, defaultHeaders)
+
       await window.api.copilot.saveCopilotToken(access_token)
-      const { token } = await window.api.copilot.getToken()
+      const { token } = await window.api.copilot.getToken(defaultHeaders)
 
       if (token) {
+        const { login, avatar } = await window.api.copilot.getUser(access_token)
         setAuthStatus(AuthStatus.AUTHENTICATED)
+        updateState({ username: login, avatar: avatar })
         updateProvider({ ...provider, apiKey: token, isAuthed: true })
         setApiKey(token)
-        console.log('Copilot token:', token)
         message.success(t('settings.provider.copilot.auth_success'))
       }
     } catch (error) {
@@ -82,7 +87,7 @@ const GithubCopilotSettings: FC<GithubCopilotSettingsProps> = ({ provider: initi
     } finally {
       setLoading(false)
     }
-  }, [deviceCode, t, updateProvider, provider, setApiKey])
+  }, [deviceCode, t, updateProvider, provider, setApiKey, updateState, defaultHeaders])
 
   // 登出
   const handleLogout = useCallback(async () => {
@@ -94,7 +99,7 @@ const GithubCopilotSettings: FC<GithubCopilotSettingsProps> = ({ provider: initi
       setApiKey('')
 
       // 3. 清除本地存储的token
-      await window.api.copilot.saveCopilotToken('')
+      await window.api.copilot.logout()
 
       // 4. 更新UI状态
       setAuthStatus(AuthStatus.NOT_STARTED)
@@ -127,6 +132,18 @@ const GithubCopilotSettings: FC<GithubCopilotSettingsProps> = ({ provider: initi
     }
   }, [verificationUri])
 
+  // 处理更新请求头
+  const handleUpdateHeaders = useCallback(() => {
+    try {
+      // 处理headerText可能为空的情况
+      const headers = headerText.trim() ? JSON.parse(headerText) : {}
+      updateDefaultHeaders(headers)
+      message.success(t('message.save.success.title'))
+    } catch (error) {
+      message.error(t('settings.provider.copilot.invalid_json'))
+    }
+  }, [headerText, updateDefaultHeaders, t])
+
   // 根据认证状态渲染不同的UI
   const renderAuthContent = () => {
     switch (authStatus) {
@@ -135,13 +152,27 @@ const GithubCopilotSettings: FC<GithubCopilotSettingsProps> = ({ provider: initi
           <>
             <Alert
               type="success"
-              message={t('settings.provider.copilot.auth_success_title')}
+              message={
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    {avatar && (
+                      <img
+                        src={avatar}
+                        alt="Avatar"
+                        style={{ width: 20, height: 20, borderRadius: '50%', marginRight: 8 }}
+                        loading="lazy"
+                      />
+                    )}
+                    <span>{username || t('settings.provider.copilot.auth_success_title')}</span>
+                  </div>
+                  <Button type="primary" danger size="small" loading={loading} onClick={handleLogout}>
+                    {t('settings.provider.copilot.logout')}
+                  </Button>
+                </div>
+              }
               icon={<CheckCircleOutlined />}
               showIcon
             />
-            <Button type="primary" danger loading={loading} onClick={handleLogout}>
-              {t('settings.provider.copilot.logout')}
-            </Button>
           </>
         )
 
@@ -203,18 +234,49 @@ const GithubCopilotSettings: FC<GithubCopilotSettingsProps> = ({ provider: initi
     <Container>
       <Space direction="vertical" style={{ width: '100%' }}>
         {renderAuthContent()}
-        <SettingRow>
-          rate limit
-          <Slider
-            defaultValue={provider.rateLimit ?? 10}
-            style={{ width: 200 }}
-            min={1}
-            max={60}
-            step={1}
-            marks={{ 1: '1', 10: t('settings.websearch.search_result_default'), 60: '60' }}
-            onChangeComplete={(value) => updateProvider({ ...provider, rateLimit: value })}
-          />
-        </SettingRow>
+        <SettingDivider />
+        <SettingGroup>
+          <SettingTitle> {t('settings.provider.copilot.model_setting')}</SettingTitle>
+          <SettingDivider />
+          <SettingRow>
+            {t('settings.provider.copilot.rate_limit')}
+            <Slider
+              defaultValue={provider.rateLimit ?? 10}
+              style={{ width: 200 }}
+              min={1}
+              max={60}
+              step={1}
+              marks={{ 1: '1', 10: t('settings.websearch.search_result_default'), 60: '60' }}
+              onChangeComplete={(value) => updateProvider({ ...provider, rateLimit: value })}
+            />
+          </SettingRow>
+          <SettingRow>
+            {t('settings.provider.copilot.custom_headers')}
+            <Button onClick={() => setShowHeadersForm((prev) => !prev)} style={{ width: 200 }}>
+              {t('settings.provider.copilot.expand')}
+            </Button>
+          </SettingRow>
+          {showHeadersForm && (
+            <SettingRow>
+              <Space direction="vertical" style={{ width: '100%' }}>
+                <SettingHelpText>{t('settings.provider.copilot.headers_description')}</SettingHelpText>
+                <Input.TextArea
+                  rows={5}
+                  autoSize={{ minRows: 2, maxRows: 8 }}
+                  value={headerText}
+                  onChange={(e) => setHeaderText(e.target.value)}
+                  placeholder={`{\n  "Header-Name": "Header-Value"\n}`}
+                />
+                <Space>
+                  <Button onClick={handleUpdateHeaders} type="primary">
+                    {t('common.save')}
+                  </Button>
+                  <Button onClick={() => setHeaderText(JSON.stringify({}, null, 2))}>{t('common.reset')}</Button>
+                </Space>
+              </Space>
+            </SettingRow>
+          )}
+        </SettingGroup>
       </Space>
     </Container>
   )

@@ -11,6 +11,7 @@ import i18n from '@renderer/i18n'
 import { getAssistantSettings, getDefaultModel, getTopNamingModel } from '@renderer/services/AssistantService'
 import { EVENT_NAMES } from '@renderer/services/EventService'
 import { filterContextMessages, filterUserRoleStartMessages } from '@renderer/services/MessagesService'
+import store from '@renderer/store'
 import { Assistant, FileTypes, GenerateImageParams, Message, Model, Provider, Suggestion } from '@renderer/types'
 import { removeSpecialCharacters } from '@renderer/utils'
 import { takeRight } from 'lodash'
@@ -711,9 +712,9 @@ export default class OpenAIProvider extends BaseProvider {
 
   public async checkIsCopilot() {
     if (this.provider.id !== 'copilot') return
-
+    const defaultHeaders = store.getState().copilot.defaultHeaders
     // copilot每次请求前需要重新获取token，因为token中附带时间戳
-    const { token } = await window.api.copilot.getToken()
+    const { token } = await window.api.copilot.getToken(defaultHeaders)
     this.sdk.apiKey = token
   }
 }
