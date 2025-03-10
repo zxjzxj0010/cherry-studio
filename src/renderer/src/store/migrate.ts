@@ -1242,16 +1242,18 @@ const migrateConfig = {
     return state
   },
   '78': (state: RootState) => {
-    state.llm.providers.push({
-      id: 'copilot',
-      name: 'Github Copilot',
-      type: 'openai',
-      apiKey: '',
-      apiHost: 'https://api.githubcopilot.com/',
-      models: SYSTEM_MODELS.copilot,
-      isSystem: true,
-      enabled: false
-    })
+    if (!state.llm.providers.find((p) => p.id === 'copilot')) {
+      state.llm.providers.push({
+        id: 'copilot',
+        name: 'Github Copilot',
+        type: 'openai',
+        apiKey: '',
+        apiHost: 'https://api.githubcopilot.com/',
+        models: SYSTEM_MODELS.copilot,
+        isSystem: true,
+        enabled: false
+      })
+    }
     return state
   }
 }
