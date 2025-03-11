@@ -3,11 +3,6 @@ name: build
 on:
   workflow_dispatch:
     inputs:
-      tag:
-        description: 'Release tag (e.g. v1.0.0)'
-        required: true
-        default: 'v0.9.18'
-
       branch:
         description: 'Target branch to build'
         required: true
@@ -32,16 +27,7 @@ jobs:
         with:
           ref: ${{ github.event.inputs.branch }}  # 使用手动输入的参数
         
-      - name: Get release tag
-        id: get-tag
-        shell: bash
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "tag=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
-          else
-            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-          fi
-
+     
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
@@ -72,26 +58,14 @@ jobs:
         run: |
           yarn build:npm mac
           yarn build:mac
-        env:
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          APPLE_ID: ${{ vars.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ vars.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
-          RENDERER_VITE_AIHUBMIX_SECRET: ${{ vars.RENDERER_VITE_AIHUBMIX_SECRET }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
       
-          
-      - name: Replace spaces in filenames
-        run: node scripts/replace-spaces.js
-
-      - name: Release
-        uses: ncipollo/release-action@v1
+    # 可选：上传构建产物
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        if: success()
         with:
-          draft: true
-          allowUpdates: true
-          makeLatest: false
-          tag: ${{ steps.get-tag.outputs.tag }}
-          artifacts: 'dist/*.exe,dist/*.zip,dist/*.dmg,dist/*.AppImage,dist/*.snap,dist/*.deb,dist/*.rpm,dist/*.tar.gz,dist/latest*.yml,dist/*.blockmap'
-          token: ${{ secrets.GITHUB_TOKEN }}
+          name: build-artifacts
+          path: /build/ # 替换为实际的构建输出目录
+      
