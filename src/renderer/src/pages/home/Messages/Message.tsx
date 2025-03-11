@@ -141,54 +141,6 @@ const MessageItem: FC<Props> = ({
     )
   }
 
-  const checkRateLimit = (
-    message: Message,
-    messages: Message[],
-    provider: { rateLimit?: number },
-    t: (key: string, options?: any) => string,
-    onGetMessages: () => Message[],
-    onSetMessages: Dispatch<SetStateAction<Message[]>>,
-    topic: Topic,
-    setMessage: Dispatch<SetStateAction<Message>>
-  ): boolean => {
-    if (!provider.rateLimit) {
-      return false
-    }
-
-    const now = Date.now()
-    const previousMessages = messages.filter((m) => m.id !== message.id && !m.status.includes('ing'))
-
-    if (previousMessages.length > 1) {
-      const lastMessage = previousMessages[0]
-      const lastMessageTime = new Date(lastMessage.createdAt).getTime()
-      const timeDiff = now - lastMessageTime
-
-      if (timeDiff < provider.rateLimit * 1000) {
-        const waitTime = Math.ceil((provider.rateLimit * 1000 - timeDiff) / 1000)
-        window.message.warning({
-          content: t('message.warning.rate.limit', { seconds: waitTime }),
-          duration: 5,
-          key: 'rate-limit-message'
-        })
-
-        const updatedMessage = { ...message, status: 'error' as const }
-        setMessage(updatedMessage)
-
-        // 同时更新 messages 列表和数据库中的状态
-        const messages = onGetMessages?.()
-        if (messages) {
-          const updatedMessages = messages.map((m) => (m.id === message.id ? updatedMessage : m))
-          onSetMessages?.(updatedMessages)
-          topic && db.topics.update(topic.id, { messages: updatedMessages })
-        }
-
-        return true
-      }
-    }
-
-    return false
-  }
-
   return (
     <MessageContainer
       key={message.id}

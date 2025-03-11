@@ -1255,11 +1255,9 @@ const migrateConfig = {
         enabled: false
       })
     }
-    return state
-  },
-  '78': (state: RootState) => {
     state.llm.providers = moveProvider(state.llm.providers, 'ppio', 9)
     state.llm.providers = moveProvider(state.llm.providers, 'infini', 10)
+
     return state
   }
 }

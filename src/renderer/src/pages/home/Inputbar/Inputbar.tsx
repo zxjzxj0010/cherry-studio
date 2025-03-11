@@ -21,6 +21,7 @@ import { useSidebarIconShow } from '@renderer/hooks/useSidebarIcon'
 import { addAssistantMessagesToTopic, getDefaultTopic } from '@renderer/services/AssistantService'
 import { EVENT_NAMES, EventEmitter } from '@renderer/services/EventService'
 import FileManager from '@renderer/services/FileManager'
+import { checkRateLimit } from '@renderer/services/MessagesService'
 import { estimateTextTokens as estimateTxtTokens } from '@renderer/services/TokenService'
 import { translateText } from '@renderer/services/TranslateService'
 import WebSearchService from '@renderer/services/WebSearchService'
@@ -134,6 +135,9 @@ const Inputbar: FC<Props> = ({ assistant: _assistant, setActiveTopic }) => {
     await modelGenerating()
 
     if (inputEmpty) {
+      return
+    }
+    if (checkRateLimit(assistant)) {
       return
     }
 
