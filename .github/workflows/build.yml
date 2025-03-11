@@ -67,5 +67,5 @@ jobs:
         if: success()
         with:
           name: build-artifacts
-          path: /build/ # 替换为实际的构建输出目录
+          path: ./dist/ # 替换为实际的构建输出目录
       
