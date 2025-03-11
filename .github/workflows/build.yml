@@ -21,7 +21,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-latest]
       fail-fast: false
 
 
@@ -81,23 +81,7 @@ jobs:
           RENDERER_VITE_AIHUBMIX_SECRET: ${{ vars.RENDERER_VITE_AIHUBMIX_SECRET }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Windows
-        if: matrix.os == 'windows-latest'
-        run: yarn build:win
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RENDERER_VITE_AIHUBMIX_SECRET: ${{ vars.RENDERER_VITE_AIHUBMIX_SECRET }}
-
-          
-      - name: Build Linux
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          yarn build:npm linux
-          yarn build:linux
-
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RENDERER_VITE_AIHUBMIX_SECRET: ${{ vars.RENDERER_VITE_AIHUBMIX_SECRET }}
+      
           
       - name: Replace spaces in filenames
         run: node scripts/replace-spaces.js
